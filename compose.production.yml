@@ -1,0 +1,91 @@
+services:
+  gateway:
+    image: ${HANZOBOT_IMAGE:-hanzobot:local}
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      NODE_ENV: production
+      BOT_STATE_DIR: /data/.hanzobot
+      BOT_WORKSPACE_DIR: /data/workspace
+      BOT_GATEWAY_TOKEN: ${HANZOBOT_GATEWAY_TOKEN:-${BOT_GATEWAY_TOKEN}}
+      HANZO_IAM_ENDPOINT: ${HANZO_IAM_ENDPOINT:-https://hanzo.id}
+      HANZO_IAM_CLIENT_ID: ${HANZO_IAM_CLIENT_ID:-hanzobot-client-id}
+      HANZO_IAM_CLIENT_SECRET: ${HANZO_IAM_CLIENT_SECRET}
+      HANZO_CONSOLE_API_URL: ${HANZO_CONSOLE_API_URL:-https://cloud.hanzo.ai}
+      HANZO_CONSOLE_API_KEY: ${HANZO_CONSOLE_API_KEY}
+      REDIS_URL: redis://redis:6379
+      NODE_OPTIONS: "--max-old-space-size=1536"
+    volumes:
+      - hanzobot-data:/data
+    ports:
+      - "18789:18789"
+    init: true
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    command:
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--bind",
+        "lan",
+        "--port",
+        "18789"
+      ]
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:18789/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    depends_on:
+      - gateway
+
+volumes:
+  hanzobot-data:
+  redis-data:
+  caddy-data:
+  caddy-config:

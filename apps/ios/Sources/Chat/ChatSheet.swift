@@ -1,16 +1,16 @@
-import ClawdbotChatUI
-import ClawdbotKit
+import BotChatUI
+import BotKit
 import SwiftUI
 
 struct ChatSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var viewModel: ClawdbotChatViewModel
+    @State private var viewModel: BotChatViewModel
     private let userAccent: Color?
 
     init(gateway: GatewayNodeSession, sessionKey: String, userAccent: Color? = nil) {
         let transport = IOSGatewayChatTransport(gateway: gateway)
         self._viewModel = State(
-            initialValue: ClawdbotChatViewModel(
+            initialValue: BotChatViewModel(
                 sessionKey: sessionKey,
                 transport: transport))
         self.userAccent = userAccent
@@ -18,7 +18,7 @@ struct ChatSheet: View {
 
     var body: some View {
         NavigationStack {
-            ClawdbotChatView(
+            BotChatView(
                 viewModel: self.viewModel,
                 showsSessionSwitcher: true,
                 userAccent: self.userAccent)

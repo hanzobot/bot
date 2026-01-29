@@ -1,5 +1,5 @@
 import Testing
-@testable import Clawdbot
+@testable import Bot
 
 @Suite(.serialized) struct GatewayDiscoveryModelTests {
     @Test @MainActor func debugLoggingCapturesLifecycleAndResets() {

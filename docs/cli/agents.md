@@ -1,10 +1,10 @@
 ---
-summary: "CLI reference for `clawdbot agents` (list/add/delete/set identity)"
+summary: "CLI reference for `bot agents` (list/add/delete/set identity)"
 read_when:
   - You want multiple isolated agents (workspaces + routing + auth)
 ---
 
-# `clawdbot agents`
+# `bot agents`
 
 Manage isolated agents (workspaces + auth + routing).
 
@@ -15,17 +15,17 @@ Related:
 ## Examples
 
 ```bash
-clawdbot agents list
-clawdbot agents add work --workspace ~/clawd-work
-clawdbot agents set-identity --workspace ~/clawd --from-identity
-clawdbot agents set-identity --agent main --avatar avatars/clawd.png
-clawdbot agents delete work
+bot agents list
+bot agents add work --workspace ~/bot-work
+bot agents set-identity --workspace ~/bot --from-identity
+bot agents set-identity --agent main --avatar avatars/bot.png
+bot agents delete work
 ```
 
 ## Identity files
 
 Each agent workspace can include an `IDENTITY.md` at the workspace root:
-- Example path: `~/clawd/IDENTITY.md`
+- Example path: `~/bot/IDENTITY.md`
 - `set-identity --from-identity` reads from the workspace root (or an explicit `--identity-file`)
 
 Avatar paths resolve relative to the workspace root.
@@ -41,13 +41,13 @@ Avatar paths resolve relative to the workspace root.
 Load from `IDENTITY.md`:
 
 ```bash
-clawdbot agents set-identity --workspace ~/clawd --from-identity
+bot agents set-identity --workspace ~/bot --from-identity
 ```
 
 Override fields explicitly:
 
 ```bash
-clawdbot agents set-identity --agent main --name "Clawd" --emoji "🦞" --avatar avatars/clawd.png
+bot agents set-identity --agent main --name "Bot" --emoji "🦞" --avatar avatars/bot.png
 ```
 
 Config sample:
@@ -59,10 +59,10 @@ Config sample:
       {
         id: "main",
         identity: {
-          name: "Clawd",
+          name: "Bot",
           theme: "space lobster",
           emoji: "🦞",
-          avatar: "avatars/clawd.png"
+          avatar: "avatars/bot.png"
         }
       }
     ]

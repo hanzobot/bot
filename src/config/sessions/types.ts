@@ -21,6 +21,8 @@ export type SessionOrigin = {
   to?: string;
   accountId?: string;
   threadId?: string | number;
+  /** Organization ID for multi-tenant isolation (from IAM JWT claims). */
+  orgId?: string;
 };
 
 export type SessionEntry = {

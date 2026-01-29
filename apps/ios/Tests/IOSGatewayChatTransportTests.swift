@@ -1,6 +1,6 @@
-import ClawdbotKit
+import BotKit
 import Testing
-@testable import Clawdbot
+@testable import Bot
 
 @Suite struct IOSGatewayChatTransportTests {
     @Test func requestsFailFastWhenGatewayNotConnected() async {

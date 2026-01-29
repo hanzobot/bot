@@ -1,6 +1,6 @@
-# @clawdbot/voice-call
+# @botbot/voice-call
 
-Official Voice Call plugin for **Clawdbot**.
+Official Voice Call plugin for **Botbot**.
 
 Providers:
 - **Twilio** (Programmable Voice + Media Streams)
@@ -8,15 +8,15 @@ Providers:
 - **Plivo** (Voice API + XML transfer + GetInput speech)
 - **Mock** (dev/no network)
 
-Docs: `https://docs.clawd.bot/plugins/voice-call`
-Plugin system: `https://docs.clawd.bot/plugin`
+Docs: `https://docs.bot.hanzo.ai/plugins/voice-call`
+Plugin system: `https://docs.bot.hanzo.ai/plugin`
 
 ## Install (local dev)
 
-### Option A: install via Clawdbot (recommended)
+### Option A: install via Botbot (recommended)
 
 ```bash
-clawdbot plugins install @clawdbot/voice-call
+botbot plugins install @botbot/voice-call
 ```
 
 Restart the Gateway afterwards.
@@ -24,9 +24,9 @@ Restart the Gateway afterwards.
 ### Option B: copy into your global extensions folder (dev)
 
 ```bash
-mkdir -p ~/.clawdbot/extensions
-cp -R extensions/voice-call ~/.clawdbot/extensions/voice-call
-cd ~/.clawdbot/extensions/voice-call && pnpm install
+mkdir -p ~/.botbot/extensions
+cp -R extensions/voice-call ~/.botbot/extensions/voice-call
+cd ~/.botbot/extensions/voice-call && pnpm install
 ```
 
 ## Config
@@ -99,13 +99,13 @@ Notes:
 ## CLI
 
 ```bash
-clawdbot voicecall call --to "+15555550123" --message "Hello from Clawdbot"
-clawdbot voicecall continue --call-id <id> --message "Any questions?"
-clawdbot voicecall speak --call-id <id> --message "One moment"
-clawdbot voicecall end --call-id <id>
-clawdbot voicecall status --call-id <id>
-clawdbot voicecall tail
-clawdbot voicecall expose --mode funnel
+botbot voicecall call --to "+15555550123" --message "Hello from Botbot"
+botbot voicecall continue --call-id <id> --message "Any questions?"
+botbot voicecall speak --call-id <id> --message "One moment"
+botbot voicecall end --call-id <id>
+botbot voicecall status --call-id <id>
+botbot voicecall tail
+botbot voicecall expose --mode funnel
 ```
 
 ## Tool

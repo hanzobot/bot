@@ -1,5 +1,5 @@
 ---
-summary: "Automated, hardened Clawdbot installation with Ansible, Tailscale VPN, and firewall isolation"
+summary: "Automated, hardened Bot installation with Ansible, Tailscale VPN, and firewall isolation"
 read_when:
   - You want automated server deployment with security hardening
   - You need firewall-isolated setup with VPN access
@@ -8,19 +8,19 @@ read_when:
 
 # Ansible Installation
 
-The recommended way to deploy Clawdbot to production servers is via **[clawdbot-ansible](https://github.com/clawdbot/clawdbot-ansible)** — an automated installer with security-first architecture.
+The recommended way to deploy Bot to production servers is via **[bot-ansible](https://github.com/bot/bot-ansible)** — an automated installer with security-first architecture.
 
 ## Quick Start
 
 One-command install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/clawdbot/clawdbot-ansible/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/bot/bot-ansible/main/install.sh | bash
 ```
 
-> **📦 Full guide: [github.com/clawdbot/clawdbot-ansible](https://github.com/clawdbot/clawdbot-ansible)**
+> **📦 Full guide: [github.com/bot/bot-ansible](https://github.com/bot/bot-ansible)**
 >
-> The clawdbot-ansible repo is the source of truth for Ansible deployment. This page is a quick overview.
+> The bot-ansible repo is the source of truth for Ansible deployment. This page is a quick overview.
 
 ## What You Get
 
@@ -46,22 +46,22 @@ The Ansible playbook installs and configures:
 2. **UFW firewall** (SSH + Tailscale ports only)
 3. **Docker CE + Compose V2** (for agent sandboxes)
 4. **Node.js 22.x + pnpm** (runtime dependencies)
-5. **Clawdbot** (host-based, not containerized)
+5. **Bot** (host-based, not containerized)
 6. **Systemd service** (auto-start with security hardening)
 
 Note: The gateway runs **directly on the host** (not in Docker), but agent sandboxes use Docker for isolation. See [Sandboxing](/gateway/sandboxing) for details.
 
 ## Post-Install Setup
 
-After installation completes, switch to the clawdbot user:
+After installation completes, switch to the bot user:
 
 ```bash
-sudo -i -u clawdbot
+sudo -i -u bot
 ```
 
 The post-install script will guide you through:
 
-1. **Onboarding wizard**: Configure Clawdbot settings
+1. **Onboarding wizard**: Configure Bot settings
 2. **Provider login**: Connect WhatsApp/Telegram/Discord/Signal
 3. **Gateway testing**: Verify the installation
 4. **Tailscale setup**: Connect to your VPN mesh
@@ -70,17 +70,17 @@ The post-install script will guide you through:
 
 ```bash
 # Check service status
-sudo systemctl status clawdbot
+sudo systemctl status bot
 
 # View live logs
-sudo journalctl -u clawdbot -f
+sudo journalctl -u bot -f
 
 # Restart gateway
-sudo systemctl restart clawdbot
+sudo systemctl restart bot
 
-# Provider login (run as clawdbot user)
-sudo -i -u clawdbot
-clawdbot channels login
+# Provider login (run as bot user)
+sudo -i -u bot
+bot channels login
 ```
 
 ## Security Architecture
@@ -117,8 +117,8 @@ If you prefer manual control over the automation:
 sudo apt update && sudo apt install -y ansible git
 
 # 2. Clone repository
-git clone https://github.com/clawdbot/clawdbot-ansible.git
-cd clawdbot-ansible
+git clone https://github.com/bot/bot-ansible.git
+cd bot-ansible
 
 # 3. Install Ansible collections
 ansible-galaxy collection install -r requirements.yml
@@ -126,18 +126,18 @@ ansible-galaxy collection install -r requirements.yml
 # 4. Run playbook
 ./run-playbook.sh
 
-# Or run directly (then manually execute /tmp/clawdbot-setup.sh after)
+# Or run directly (then manually execute /tmp/bot-setup.sh after)
 # ansible-playbook playbook.yml --ask-become-pass
 ```
 
-## Updating Clawdbot
+## Updating Bot
 
-The Ansible installer sets up Clawdbot for manual updates. See [Updating](/install/updating) for the standard update flow.
+The Ansible installer sets up Bot for manual updates. See [Updating](/install/updating) for the standard update flow.
 
 To re-run the Ansible playbook (e.g., for configuration changes):
 
 ```bash
-cd clawdbot-ansible
+cd bot-ansible
 ./run-playbook.sh
 ```
 
@@ -156,14 +156,14 @@ If you're locked out:
 
 ```bash
 # Check logs
-sudo journalctl -u clawdbot -n 100
+sudo journalctl -u bot -n 100
 
 # Verify permissions
-sudo ls -la /opt/clawdbot
+sudo ls -la /opt/bot
 
 # Test manual start
-sudo -i -u clawdbot
-cd ~/clawdbot
+sudo -i -u bot
+cd ~/bot
 pnpm start
 ```
 
@@ -174,32 +174,32 @@ pnpm start
 sudo systemctl status docker
 
 # Check sandbox image
-sudo docker images | grep clawdbot-sandbox
+sudo docker images | grep bot-sandbox
 
 # Build sandbox image if missing
-cd /opt/clawdbot/clawdbot
-sudo -u clawdbot ./scripts/sandbox-setup.sh
+cd /opt/bot/bot
+sudo -u bot ./scripts/sandbox-setup.sh
 ```
 
 ### Provider login fails
 
-Make sure you're running as the `clawdbot` user:
+Make sure you're running as the `bot` user:
 
 ```bash
-sudo -i -u clawdbot
-clawdbot channels login
+sudo -i -u bot
+bot channels login
 ```
 
 ## Advanced Configuration
 
 For detailed security architecture and troubleshooting:
-- [Security Architecture](https://github.com/clawdbot/clawdbot-ansible/blob/main/docs/security.md)
-- [Technical Details](https://github.com/clawdbot/clawdbot-ansible/blob/main/docs/architecture.md)
-- [Troubleshooting Guide](https://github.com/clawdbot/clawdbot-ansible/blob/main/docs/troubleshooting.md)
+- [Security Architecture](https://github.com/bot/bot-ansible/blob/main/docs/security.md)
+- [Technical Details](https://github.com/bot/bot-ansible/blob/main/docs/architecture.md)
+- [Troubleshooting Guide](https://github.com/bot/bot-ansible/blob/main/docs/troubleshooting.md)
 
 ## Related
 
-- [clawdbot-ansible](https://github.com/clawdbot/clawdbot-ansible) — full deployment guide
+- [bot-ansible](https://github.com/bot/bot-ansible) — full deployment guide
 - [Docker](/install/docker) — containerized gateway setup
 - [Sandboxing](/gateway/sandboxing) — agent sandbox configuration
 - [Multi-Agent Sandbox & Tools](/multi-agent-sandbox-tools) — per-agent isolation

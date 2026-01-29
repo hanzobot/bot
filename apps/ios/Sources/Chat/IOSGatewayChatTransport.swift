@@ -1,9 +1,9 @@
-import ClawdbotChatUI
-import ClawdbotKit
-import ClawdbotProtocol
+import BotChatUI
+import BotKit
+import BotProtocol
 import Foundation
 
-struct IOSGatewayChatTransport: ClawdbotChatTransport, Sendable {
+struct IOSGatewayChatTransport: BotChatTransport, Sendable {
     private let gateway: GatewayNodeSession
 
     init(gateway: GatewayNodeSession) {
@@ -20,7 +20,7 @@ struct IOSGatewayChatTransport: ClawdbotChatTransport, Sendable {
         _ = try await self.gateway.request(method: "chat.abort", paramsJSON: json, timeoutSeconds: 10)
     }
 
-    func listSessions(limit: Int?) async throws -> ClawdbotChatSessionsListResponse {
+    func listSessions(limit: Int?) async throws -> BotChatSessionsListResponse {
         struct Params: Codable {
             var includeGlobal: Bool
             var includeUnknown: Bool
@@ -29,7 +29,7 @@ struct IOSGatewayChatTransport: ClawdbotChatTransport, Sendable {
         let data = try JSONEncoder().encode(Params(includeGlobal: true, includeUnknown: false, limit: limit))
         let json = String(data: data, encoding: .utf8)
         let res = try await self.gateway.request(method: "sessions.list", paramsJSON: json, timeoutSeconds: 15)
-        return try JSONDecoder().decode(ClawdbotChatSessionsListResponse.self, from: res)
+        return try JSONDecoder().decode(BotChatSessionsListResponse.self, from: res)
     }
 
     func setActiveSessionKey(_ sessionKey: String) async throws {
@@ -39,12 +39,12 @@ struct IOSGatewayChatTransport: ClawdbotChatTransport, Sendable {
         await self.gateway.sendEvent(event: "chat.subscribe", payloadJSON: json)
     }
 
-    func requestHistory(sessionKey: String) async throws -> ClawdbotChatHistoryPayload {
+    func requestHistory(sessionKey: String) async throws -> BotChatHistoryPayload {
         struct Params: Codable { var sessionKey: String }
         let data = try JSONEncoder().encode(Params(sessionKey: sessionKey))
         let json = String(data: data, encoding: .utf8)
         let res = try await self.gateway.request(method: "chat.history", paramsJSON: json, timeoutSeconds: 15)
-        return try JSONDecoder().decode(ClawdbotChatHistoryPayload.self, from: res)
+        return try JSONDecoder().decode(BotChatHistoryPayload.self, from: res)
     }
 
     func sendMessage(
@@ -52,13 +52,13 @@ struct IOSGatewayChatTransport: ClawdbotChatTransport, Sendable {
         message: String,
         thinking: String,
         idempotencyKey: String,
-        attachments: [ClawdbotChatAttachmentPayload]) async throws -> ClawdbotChatSendResponse
+        attachments: [BotChatAttachmentPayload]) async throws -> BotChatSendResponse
     {
         struct Params: Codable {
             var sessionKey: String
             var message: String
             var thinking: String
-            var attachments: [ClawdbotChatAttachmentPayload]?
+            var attachments: [BotChatAttachmentPayload]?
             var timeoutMs: Int
             var idempotencyKey: String
         }
@@ -73,16 +73,16 @@ struct IOSGatewayChatTransport: ClawdbotChatTransport, Sendable {
         let data = try JSONEncoder().encode(params)
         let json = String(data: data, encoding: .utf8)
         let res = try await self.gateway.request(method: "chat.send", paramsJSON: json, timeoutSeconds: 35)
-        return try JSONDecoder().decode(ClawdbotChatSendResponse.self, from: res)
+        return try JSONDecoder().decode(BotChatSendResponse.self, from: res)
     }
 
     func requestHealth(timeoutMs: Int) async throws -> Bool {
         let seconds = max(1, Int(ceil(Double(timeoutMs) / 1000.0)))
         let res = try await self.gateway.request(method: "health", paramsJSON: nil, timeoutSeconds: seconds)
-        return (try? JSONDecoder().decode(ClawdbotGatewayHealthOK.self, from: res))?.ok ?? true
+        return (try? JSONDecoder().decode(BotGatewayHealthOK.self, from: res))?.ok ?? true
     }
 
-    func events() -> AsyncStream<ClawdbotChatTransportEvent> {
+    func events() -> AsyncStream<BotChatTransportEvent> {
         AsyncStream { continuation in
             let task = Task {
                 let stream = await self.gateway.subscribeServerEvents()
@@ -97,13 +97,13 @@ struct IOSGatewayChatTransport: ClawdbotChatTransport, Sendable {
                         guard let payload = evt.payload else { break }
                         let ok = (try? GatewayPayloadDecoding.decode(
                             payload,
-                            as: ClawdbotGatewayHealthOK.self))?.ok ?? true
+                            as: BotGatewayHealthOK.self))?.ok ?? true
                         continuation.yield(.health(ok: ok))
                     case "chat":
                         guard let payload = evt.payload else { break }
                         if let chatPayload = try? GatewayPayloadDecoding.decode(
                             payload,
-                            as: ClawdbotChatEventPayload.self)
+                            as: BotChatEventPayload.self)
                         {
                             continuation.yield(.chat(chatPayload))
                         }
@@ -111,7 +111,7 @@ struct IOSGatewayChatTransport: ClawdbotChatTransport, Sendable {
                         guard let payload = evt.payload else { break }
                         if let agentPayload = try? GatewayPayloadDecoding.decode(
                             payload,
-                            as: ClawdbotAgentEventPayload.self)
+                            as: BotAgentEventPayload.self)
                         {
                             continuation.yield(.agent(agentPayload))
                         }

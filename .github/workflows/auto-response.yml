@@ -20,10 +20,10 @@ jobs:
           script: |
             const rules = [
               {
-                label: "skill-clawdhub",
+                label: "skill-skills",
                 close: true,
                 message:
-                  "Thanks for the contribution! New skills should be published to Clawdhub for everyone to use. We’re keeping the core lean on skills, so I’m closing this out.",
+                  "Thanks for the contribution! New skills should be published to Bothub for everyone to use. We’re keeping the core lean on skills, so I’m closing this out.",
               },
             ];
 

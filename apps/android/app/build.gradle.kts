@@ -8,17 +8,17 @@ plugins {
 }
 
 android {
-  namespace = "com.clawdbot.android"
+  namespace = "com.bot.android"
   compileSdk = 36
 
   sourceSets {
     getByName("main") {
-      assets.srcDir(file("../../shared/ClawdbotKit/Sources/ClawdbotKit/Resources"))
+      assets.srcDir(file("../../shared/BotKit/Sources/BotKit/Resources"))
     }
   }
 
   defaultConfig {
-    applicationId = "com.clawdbot.android"
+    applicationId = "com.bot.android"
     minSdk = 31
     targetSdk = 36
     versionCode = 202601250
@@ -65,7 +65,7 @@ androidComponents {
         val versionName = output.versionName.orNull ?: "0"
         val buildType = variant.buildType
 
-        val outputFileName = "clawdbot-${versionName}-${buildType}.apk"
+        val outputFileName = "bot-${versionName}-${buildType}.apk"
         output.outputFileName = outputFileName
       }
   }

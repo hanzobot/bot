@@ -27,10 +27,10 @@ async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
     },
     {
       env: {
-        CLAWDBOT_AGENT_DIR: (home) => path.join(home, ".clawdbot", "agent"),
-        PI_CODING_AGENT_DIR: (home) => path.join(home, ".clawdbot", "agent"),
+        BOT_AGENT_DIR: (home) => path.join(home, ".bot", "agent"),
+        PI_CODING_AGENT_DIR: (home) => path.join(home, ".bot", "agent"),
       },
-      prefix: "clawdbot-reply-",
+      prefix: "bot-reply-",
     },
   );
 }
@@ -79,7 +79,7 @@ describe("directive behavior", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "bot"),
               elevatedDefault: "on",
             },
           },
@@ -107,7 +107,7 @@ describe("directive behavior", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "bot"),
               elevatedDefault: "on",
             },
           },
@@ -135,7 +135,7 @@ describe("directive behavior", () => {
         agents: {
           defaults: {
             model: "anthropic/claude-opus-4-5",
-            workspace: path.join(home, "clawd"),
+            workspace: path.join(home, "bot"),
             elevatedDefault: "on",
           },
         },
@@ -215,7 +215,7 @@ describe("directive behavior", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "bot"),
             },
             list: [
               {

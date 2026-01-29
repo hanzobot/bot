@@ -78,22 +78,22 @@ export async function writeSessionStore(params: {
 async function setupGatewayTestHome() {
   previousHome = process.env.HOME;
   previousUserProfile = process.env.USERPROFILE;
-  previousStateDir = process.env.CLAWDBOT_STATE_DIR;
-  previousConfigPath = process.env.CLAWDBOT_CONFIG_PATH;
-  previousSkipBrowserControl = process.env.CLAWDBOT_SKIP_BROWSER_CONTROL_SERVER;
-  previousSkipGmailWatcher = process.env.CLAWDBOT_SKIP_GMAIL_WATCHER;
-  previousSkipCanvasHost = process.env.CLAWDBOT_SKIP_CANVAS_HOST;
-  tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "clawdbot-gateway-home-"));
+  previousStateDir = process.env.BOT_STATE_DIR;
+  previousConfigPath = process.env.BOT_CONFIG_PATH;
+  previousSkipBrowserControl = process.env.BOT_SKIP_BROWSER_CONTROL_SERVER;
+  previousSkipGmailWatcher = process.env.BOT_SKIP_GMAIL_WATCHER;
+  previousSkipCanvasHost = process.env.BOT_SKIP_CANVAS_HOST;
+  tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "botd-home-"));
   process.env.HOME = tempHome;
   process.env.USERPROFILE = tempHome;
-  process.env.CLAWDBOT_STATE_DIR = path.join(tempHome, ".clawdbot");
-  delete process.env.CLAWDBOT_CONFIG_PATH;
+  process.env.BOT_STATE_DIR = path.join(tempHome, ".bot");
+  delete process.env.BOT_CONFIG_PATH;
 }
 
 function applyGatewaySkipEnv() {
-  process.env.CLAWDBOT_SKIP_BROWSER_CONTROL_SERVER = "1";
-  process.env.CLAWDBOT_SKIP_GMAIL_WATCHER = "1";
-  process.env.CLAWDBOT_SKIP_CANVAS_HOST = "1";
+  process.env.BOT_SKIP_BROWSER_CONTROL_SERVER = "1";
+  process.env.BOT_SKIP_GMAIL_WATCHER = "1";
+  process.env.BOT_SKIP_CANVAS_HOST = "1";
 }
 
 async function resetGatewayTestState(options: { uniqueConfigRoot: boolean }) {
@@ -105,8 +105,8 @@ async function resetGatewayTestState(options: { uniqueConfigRoot: boolean }) {
   }
   applyGatewaySkipEnv();
   tempConfigRoot = options.uniqueConfigRoot
-    ? await fs.mkdtemp(path.join(tempHome, "clawdbot-test-"))
-    : path.join(tempHome, ".clawdbot-test");
+    ? await fs.mkdtemp(path.join(tempHome, "bot-test-"))
+    : path.join(tempHome, ".bot-test");
   setTestConfigRoot(tempConfigRoot);
   sessionStoreSaveDelayMs.value = 0;
   testTailnetIPv4.value = undefined;
@@ -152,17 +152,17 @@ async function cleanupGatewayTestHome(options: { restoreEnv: boolean }) {
     else process.env.HOME = previousHome;
     if (previousUserProfile === undefined) delete process.env.USERPROFILE;
     else process.env.USERPROFILE = previousUserProfile;
-    if (previousStateDir === undefined) delete process.env.CLAWDBOT_STATE_DIR;
-    else process.env.CLAWDBOT_STATE_DIR = previousStateDir;
-    if (previousConfigPath === undefined) delete process.env.CLAWDBOT_CONFIG_PATH;
-    else process.env.CLAWDBOT_CONFIG_PATH = previousConfigPath;
+    if (previousStateDir === undefined) delete process.env.BOT_STATE_DIR;
+    else process.env.BOT_STATE_DIR = previousStateDir;
+    if (previousConfigPath === undefined) delete process.env.BOT_CONFIG_PATH;
+    else process.env.BOT_CONFIG_PATH = previousConfigPath;
     if (previousSkipBrowserControl === undefined)
-      delete process.env.CLAWDBOT_SKIP_BROWSER_CONTROL_SERVER;
-    else process.env.CLAWDBOT_SKIP_BROWSER_CONTROL_SERVER = previousSkipBrowserControl;
-    if (previousSkipGmailWatcher === undefined) delete process.env.CLAWDBOT_SKIP_GMAIL_WATCHER;
-    else process.env.CLAWDBOT_SKIP_GMAIL_WATCHER = previousSkipGmailWatcher;
-    if (previousSkipCanvasHost === undefined) delete process.env.CLAWDBOT_SKIP_CANVAS_HOST;
-    else process.env.CLAWDBOT_SKIP_CANVAS_HOST = previousSkipCanvasHost;
+      delete process.env.BOT_SKIP_BROWSER_CONTROL_SERVER;
+    else process.env.BOT_SKIP_BROWSER_CONTROL_SERVER = previousSkipBrowserControl;
+    if (previousSkipGmailWatcher === undefined) delete process.env.BOT_SKIP_GMAIL_WATCHER;
+    else process.env.BOT_SKIP_GMAIL_WATCHER = previousSkipGmailWatcher;
+    if (previousSkipCanvasHost === undefined) delete process.env.BOT_SKIP_CANVAS_HOST;
+    else process.env.BOT_SKIP_CANVAS_HOST = previousSkipCanvasHost;
   }
   if (options.restoreEnv && tempHome) {
     await fs.rm(tempHome, {
@@ -259,16 +259,16 @@ export async function startGatewayServer(port: number, opts?: GatewayServerOptio
 
 export async function startServerWithClient(token?: string, opts?: GatewayServerOptions) {
   let port = await getFreePort();
-  const prev = process.env.CLAWDBOT_GATEWAY_TOKEN;
+  const prev = process.env.BOT_GATEWAY_TOKEN;
   const fallbackToken =
     token ??
     (typeof (testState.gatewayAuth as { token?: unknown } | undefined)?.token === "string"
       ? (testState.gatewayAuth as { token?: string }).token
       : undefined);
   if (fallbackToken === undefined) {
-    delete process.env.CLAWDBOT_GATEWAY_TOKEN;
+    delete process.env.BOT_GATEWAY_TOKEN;
   } else {
-    process.env.CLAWDBOT_GATEWAY_TOKEN = fallbackToken;
+    process.env.BOT_GATEWAY_TOKEN = fallbackToken;
   }
 
   let server: Awaited<ReturnType<typeof startGatewayServer>> | null = null;
@@ -345,13 +345,13 @@ export async function connectReq(
       ? undefined
       : typeof (testState.gatewayAuth as { token?: unknown } | undefined)?.token === "string"
         ? ((testState.gatewayAuth as { token?: string }).token ?? undefined)
-        : process.env.CLAWDBOT_GATEWAY_TOKEN;
+        : process.env.BOT_GATEWAY_TOKEN;
   const defaultPassword =
     opts?.skipDefaultAuth === true
       ? undefined
       : typeof (testState.gatewayAuth as { password?: unknown } | undefined)?.password === "string"
         ? ((testState.gatewayAuth as { password?: string }).password ?? undefined)
-        : process.env.CLAWDBOT_GATEWAY_PASSWORD;
+        : process.env.BOT_GATEWAY_PASSWORD;
   const token = opts?.token ?? defaultToken;
   const password = opts?.password ?? defaultPassword;
   const requestedScopes = Array.isArray(opts?.scopes) ? opts?.scopes : [];

@@ -1,5 +1,5 @@
 ---
-summary: "Fix Chrome/Brave/Edge/Chromium CDP startup issues for Clawdbot browser control on Linux"
+summary: "Fix Chrome/Brave/Edge/Chromium CDP startup issues for Bot browser control on Linux"
 read_when: "Browser control fails on Linux, especially with snap Chromium"
 ---
 
@@ -7,14 +7,14 @@ read_when: "Browser control fails on Linux, especially with snap Chromium"
 
 ## Problem: "Failed to start Chrome CDP on port 18800"
 
-Clawdbot's browser control server fails to launch Chrome/Brave/Edge/Chromium with the error:
+Bot's browser control server fails to launch Chrome/Brave/Edge/Chromium with the error:
 ```
-{"error":"Error: Failed to start Chrome CDP on port 18800 for profile \"clawd\"."}
+{"error":"Error: Failed to start Chrome CDP on port 18800 for profile \"bot\"."}
 ```
 
 ### Root Cause
 
-On Ubuntu (and many Linux distros), the default Chromium installation is a **snap package**. Snap's AppArmor confinement interferes with how Clawdbot spawns and monitors the browser process.
+On Ubuntu (and many Linux distros), the default Chromium installation is a **snap package**. Snap's AppArmor confinement interferes with how Bot spawns and monitors the browser process.
 
 The `apt install chromium` command installs a stub package that redirects to snap:
 ```
@@ -34,7 +34,7 @@ sudo dpkg -i google-chrome-stable_current_amd64.deb
 sudo apt --fix-broken install -y  # if there are dependency errors
 ```
 
-Then update your Clawdbot config (`~/.clawdbot/clawdbot.json`):
+Then update your Bot config (`~/.bot/bot.json`):
 
 ```json
 {
@@ -49,7 +49,7 @@ Then update your Clawdbot config (`~/.clawdbot/clawdbot.json`):
 
 ### Solution 2: Use Snap Chromium with Attach-Only Mode
 
-If you must use snap Chromium, configure Clawdbot to attach to a manually-started browser:
+If you must use snap Chromium, configure Bot to attach to a manually-started browser:
 
 1. Update config:
 ```json
@@ -67,19 +67,19 @@ If you must use snap Chromium, configure Clawdbot to attach to a manually-starte
 ```bash
 chromium-browser --headless --no-sandbox --disable-gpu \
   --remote-debugging-port=18800 \
-  --user-data-dir=$HOME/.clawdbot/browser/clawd/user-data \
+  --user-data-dir=$HOME/.bot/browser/bot/user-data \
   about:blank &
 ```
 
 3. Optionally create a systemd user service to auto-start Chrome:
 ```ini
-# ~/.config/systemd/user/clawd-browser.service
+# ~/.config/systemd/user/bot-browser.service
 [Unit]
-Description=Clawd Browser (Chrome CDP)
+Description=Bot Browser (Chrome CDP)
 After=network.target
 
 [Service]
-ExecStart=/snap/bin/chromium --headless --no-sandbox --disable-gpu --remote-debugging-port=18800 --user-data-dir=%h/.clawdbot/browser/clawd/user-data about:blank
+ExecStart=/snap/bin/chromium --headless --no-sandbox --disable-gpu --remote-debugging-port=18800 --user-data-dir=%h/.bot/browser/bot/user-data about:blank
 Restart=on-failure
 RestartSec=5
 
@@ -87,7 +87,7 @@ RestartSec=5
 WantedBy=default.target
 ```
 
-Enable with: `systemctl --user enable --now clawd-browser.service`
+Enable with: `systemctl --user enable --now bot-browser.service`
 
 ### Verifying the Browser Works
 
@@ -115,15 +115,15 @@ curl -s http://127.0.0.1:18791/tabs
 
 ### Problem: "Chrome extension relay is running, but no tab is connected"
 
-You’re using the `chrome` profile (extension relay). It expects the Clawdbot
+You’re using the `chrome` profile (extension relay). It expects the Bot
 browser extension to be attached to a live tab.
 
 Fix options:
-1. **Use the managed browser:** `clawdbot browser start --browser-profile clawd`
-   (or set `browser.defaultProfile: "clawd"`).
+1. **Use the managed browser:** `bot browser start --browser-profile bot`
+   (or set `browser.defaultProfile: "bot"`).
 2. **Use the extension relay:** install the extension, open a tab, and click the
-   Clawdbot extension icon to attach it.
+   Bot extension icon to attach it.
 
 Notes:
 - The `chrome` profile uses your **system default Chromium browser** when possible.
-- Local `clawd` profiles auto-assign `cdpPort`/`cdpUrl`; only set those for remote CDP.
+- Local `bot` profiles auto-assign `cdpPort`/`cdpUrl`; only set those for remote CDP.

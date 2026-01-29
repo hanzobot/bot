@@ -1,9 +1,9 @@
 {
-  "name": "@clawdbot/zalo",
+  "name": "@bot/zalo",
   "version": "2026.1.25",
   "type": "module",
-  "description": "Clawdbot Zalo channel plugin",
-  "clawdbot": {
+  "description": "Bot Zalo channel plugin",
+  "bot": {
     "extensions": [
       "./index.ts"
     ],
@@ -21,13 +21,13 @@
       "quickstartAllowFrom": true
     },
     "install": {
-      "npmSpec": "@clawdbot/zalo",
+      "npmSpec": "@bot/zalo",
       "localPath": "extensions/zalo",
       "defaultChoice": "npm"
     }
   },
   "dependencies": {
-    "clawdbot": "workspace:*",
+    "bot": "workspace:*",
     "undici": "7.19.0"
   }
 }

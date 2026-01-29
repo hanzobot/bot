@@ -1,4 +1,4 @@
-import ClawdbotKit
+import BotKit
 import SwiftUI
 import WebKit
 

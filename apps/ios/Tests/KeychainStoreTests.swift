@@ -1,10 +1,10 @@
 import Foundation
 import Testing
-@testable import Clawdbot
+@testable import Bot
 
 @Suite struct KeychainStoreTests {
     @Test func saveLoadUpdateDeleteRoundTrip() {
-        let service = "com.clawdbot.tests.\(UUID().uuidString)"
+        let service = "com.bot.tests.\(UUID().uuidString)"
         let account = "value"
 
         #expect(KeychainStore.delete(service: service, account: account))

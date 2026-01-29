@@ -36,7 +36,7 @@ export type DiscoveryConfig = {
 
 export type CanvasHostConfig = {
   enabled?: boolean;
-  /** Directory to serve (default: ~/clawd/canvas). */
+  /** Directory to serve (default: ~/bot/canvas). */
   root?: string;
   /** HTTP port to listen on (default: 18793). */
   port?: number;
@@ -62,13 +62,24 @@ export type TalkConfig = {
 export type GatewayControlUiConfig = {
   /** If false, the Gateway will not serve the Control UI (default /). */
   enabled?: boolean;
-  /** Optional base path prefix for the Control UI (e.g. "/clawdbot"). */
+  /** Optional base path prefix for the Control UI (e.g. "/bot"). */
   basePath?: string;
   /** Allow token-only auth over insecure HTTP (default: false). */
   allowInsecureAuth?: boolean;
 };
 
-export type GatewayAuthMode = "token" | "password";
+export type GatewayAuthMode = "token" | "password" | "iam";
+
+export type GatewayIamConfig = {
+  /** IAM endpoint URL (e.g. https://hanzo.id). */
+  endpoint: string;
+  /** OAuth2 client ID for the hanzobot application. */
+  clientId: string;
+  /** OAuth2 client secret (for server-to-server flows). */
+  clientSecret?: string;
+  /** Restrict authentication to specific org IDs. If empty, all orgs allowed. */
+  allowedOrgs?: string[];
+};
 
 export type GatewayAuthConfig = {
   /** Authentication mode for Gateway connections. Defaults to token when set. */
@@ -79,6 +90,8 @@ export type GatewayAuthConfig = {
   password?: string;
   /** Allow Tailscale identity headers when serve mode is enabled. */
   allowTailscale?: boolean;
+  /** Hanzo IAM configuration (required when mode is "iam"). */
+  iam?: GatewayIamConfig;
 };
 
 export type GatewayTailscaleMode = "off" | "serve" | "funnel";

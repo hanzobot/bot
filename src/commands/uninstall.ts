@@ -82,9 +82,9 @@ async function stopAndUninstallService(runtime: RuntimeEnv): Promise<boolean> {
 
 async function removeMacApp(runtime: RuntimeEnv, dryRun?: boolean) {
   if (process.platform !== "darwin") return;
-  await removePath("/Applications/Clawdbot.app", runtime, {
+  await removePath("/Applications/Bot.app", runtime, {
     dryRun,
-    label: "/Applications/Clawdbot.app",
+    label: "/Applications/Bot.app",
   });
 }
 
@@ -111,12 +111,12 @@ export async function uninstallCommand(runtime: RuntimeEnv, opts: UninstallOptio
           label: "Gateway service",
           hint: "launchd / systemd / schtasks",
         },
-        { value: "state", label: "State + config", hint: "~/.clawdbot" },
+        { value: "state", label: "State + config", hint: "~/.bot" },
         { value: "workspace", label: "Workspace", hint: "agent files" },
         {
           value: "app",
           label: "macOS app",
-          hint: "/Applications/Clawdbot.app",
+          hint: "/Applications/Bot.app",
         },
       ],
       initialValues: ["service", "state", "workspace"],

@@ -1,55 +1,55 @@
 ---
-summary: "CLI reference for `clawdbot devices` (device pairing + token rotation/revocation)"
+summary: "CLI reference for `bot devices` (device pairing + token rotation/revocation)"
 read_when:
   - You are approving device pairing requests
   - You need to rotate or revoke device tokens
 ---
 
-# `clawdbot devices`
+# `bot devices`
 
 Manage device pairing requests and device-scoped tokens.
 
 ## Commands
 
-### `clawdbot devices list`
+### `bot devices list`
 
 List pending pairing requests and paired devices.
 
 ```
-clawdbot devices list
-clawdbot devices list --json
+bot devices list
+bot devices list --json
 ```
 
-### `clawdbot devices approve <requestId>`
+### `bot devices approve <requestId>`
 
 Approve a pending device pairing request.
 
 ```
-clawdbot devices approve <requestId>
+bot devices approve <requestId>
 ```
 
-### `clawdbot devices reject <requestId>`
+### `bot devices reject <requestId>`
 
 Reject a pending device pairing request.
 
 ```
-clawdbot devices reject <requestId>
+bot devices reject <requestId>
 ```
 
-### `clawdbot devices rotate --device <id> --role <role> [--scope <scope...>]`
+### `bot devices rotate --device <id> --role <role> [--scope <scope...>]`
 
 Rotate a device token for a specific role (optionally updating scopes).
 
 ```
-clawdbot devices rotate --device <deviceId> --role operator --scope operator.read --scope operator.write
+bot devices rotate --device <deviceId> --role operator --scope operator.read --scope operator.write
 ```
 
-### `clawdbot devices revoke --device <id> --role <role>`
+### `bot devices revoke --device <id> --role <role>`
 
 Revoke a device token for a specific role.
 
 ```
-clawdbot devices revoke --device <deviceId> --role node
+bot devices revoke --device <deviceId> --role node
 ```
 
 ## Common options

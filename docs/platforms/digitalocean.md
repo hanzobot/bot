@@ -1,15 +1,15 @@
 ---
-summary: "Clawdbot on DigitalOcean (cheapest paid VPS option)"
+summary: "Bot on DigitalOcean (cheapest paid VPS option)"
 read_when:
-  - Setting up Clawdbot on DigitalOcean
-  - Looking for cheap VPS hosting for Clawdbot
+  - Setting up Bot on DigitalOcean
+  - Looking for cheap VPS hosting for Bot
 ---
 
-# Clawdbot on DigitalOcean
+# Bot on DigitalOcean
 
 ## Goal
 
-Run a persistent Clawdbot Gateway on DigitalOcean for **$6/month** (or $4/mo with reserved pricing).
+Run a persistent Bot Gateway on DigitalOcean for **$6/month** (or $4/mo with reserved pricing).
 
 If you want something even cheaper, see [Oracle Cloud (Free Tier)](#oracle-cloud-free-alternative) at the bottom — it's **actually free forever**.
 
@@ -54,7 +54,7 @@ If you want something even cheaper, see [Oracle Cloud (Free Tier)](#oracle-cloud
 ssh root@YOUR_DROPLET_IP
 ```
 
-## 3) Install Clawdbot
+## 3) Install Bot
 
 ```bash
 # Update system
@@ -64,17 +64,17 @@ apt update && apt upgrade -y
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt install -y nodejs
 
-# Install Clawdbot
-curl -fsSL https://clawd.bot/install.sh | bash
+# Install Bot
+curl -fsSL https://bot.hanzo.ai/install.sh | bash
 
 # Verify
-clawdbot --version
+bot --version
 ```
 
 ## 4) Run Onboarding
 
 ```bash
-clawdbot onboard --install-daemon
+bot onboard --install-daemon
 ```
 
 The wizard will walk you through:
@@ -87,13 +87,13 @@ The wizard will walk you through:
 
 ```bash
 # Check status
-clawdbot status
+bot status
 
 # Check service
-systemctl --user status clawdbot-gateway.service
+systemctl --user status bot-gateway.service
 
 # View logs
-journalctl --user -u clawdbot-gateway.service -f
+journalctl --user -u bot-gateway.service -f
 ```
 
 ## 6) Access the Dashboard
@@ -115,8 +115,8 @@ curl -fsSL https://tailscale.com/install.sh | sh
 tailscale up
 
 # Configure Gateway to use Tailscale Serve
-clawdbot config set gateway.tailscale.mode serve
-clawdbot gateway restart
+bot config set gateway.tailscale.mode serve
+bot gateway restart
 ```
 
 Open: `https://<magicdns>/`
@@ -127,8 +127,8 @@ Notes:
 
 **Option C: Tailnet bind (no Serve)**
 ```bash
-clawdbot config set gateway.bind tailnet
-clawdbot gateway restart
+bot config set gateway.bind tailnet
+bot gateway restart
 ```
 
 Open: `http://<tailscale-ip>:18789` (token required).
@@ -137,13 +137,13 @@ Open: `http://<tailscale-ip>:18789` (token required).
 
 ### Telegram
 ```bash
-clawdbot pairing list telegram
-clawdbot pairing approve telegram <CODE>
+bot pairing list telegram
+bot pairing approve telegram <CODE>
 ```
 
 ### WhatsApp
 ```bash
-clawdbot channels login whatsapp
+bot channels login whatsapp
 # Scan QR code
 ```
 
@@ -180,12 +180,12 @@ htop
 ## Persistence
 
 All state lives in:
-- `~/.clawdbot/` — config, credentials, session data
-- `~/clawd/` — workspace (SOUL.md, memory, etc.)
+- `~/.bot/` — config, credentials, session data
+- `~/bot/` — workspace (SOUL.md, memory, etc.)
 
 These survive reboots. Back them up periodically:
 ```bash
-tar -czvf clawdbot-backup.tar.gz ~/.clawdbot ~/clawd
+tar -czvf bot-backup.tar.gz ~/.bot ~/bot
 ```
 
 ---
@@ -206,7 +206,7 @@ Oracle Cloud offers **Always Free** ARM instances that are significantly more po
 2. Create a VM.Standard.A1.Flex instance (ARM)
 3. Choose Oracle Linux or Ubuntu
 4. Allocate up to 4 OCPU / 24GB RAM within free tier
-5. Follow the same Clawdbot install steps above
+5. Follow the same Bot install steps above
 
 **Caveats:**
 - Signup can be finicky (retry if it fails)
@@ -221,9 +221,9 @@ For the full Oracle guide, see the [community docs](https://gist.github.com/rssn
 
 ### Gateway won't start
 ```bash
-clawdbot gateway status
-clawdbot doctor --non-interactive
-journalctl -u clawdbot --no-pager -n 50
+bot gateway status
+bot doctor --non-interactive
+journalctl -u bot --no-pager -n 50
 ```
 
 ### Port already in use

@@ -77,22 +77,22 @@ describe("gateway SIGTERM", () => {
   });
 
   it("exits 0 on SIGTERM", { timeout: 180_000 }, async () => {
-    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "clawdbot-gateway-test-"));
+    const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "botd-test-"));
     const out: string[] = [];
     const err: string[] = [];
 
     const nodeBin = process.execPath;
     const env = {
       ...process.env,
-      CLAWDBOT_NO_RESPAWN: "1",
-      CLAWDBOT_STATE_DIR: stateDir,
-      CLAWDBOT_SKIP_CHANNELS: "1",
-      CLAWDBOT_SKIP_GMAIL_WATCHER: "1",
-      CLAWDBOT_SKIP_CRON: "1",
-      CLAWDBOT_SKIP_BROWSER_CONTROL_SERVER: "1",
-      CLAWDBOT_SKIP_CANVAS_HOST: "1",
+      BOT_NO_RESPAWN: "1",
+      BOT_STATE_DIR: stateDir,
+      BOT_SKIP_CHANNELS: "1",
+      BOT_SKIP_GMAIL_WATCHER: "1",
+      BOT_SKIP_CRON: "1",
+      BOT_SKIP_BROWSER_CONTROL_SERVER: "1",
+      BOT_SKIP_CANVAS_HOST: "1",
     };
-    const bootstrapPath = path.join(stateDir, "clawdbot-entry-bootstrap.mjs");
+    const bootstrapPath = path.join(stateDir, "bot-entry-bootstrap.mjs");
     const runLoopPath = path.resolve("src/cli/gateway-cli/run-loop.ts");
     const runtimePath = path.resolve("src/runtime.ts");
     fs.writeFileSync(

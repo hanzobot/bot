@@ -1,17 +1,17 @@
-# @clawdbot/zalo
+# @botbot/zalo
 
-Zalo channel plugin for Clawdbot (Bot API).
+Zalo channel plugin for Botbot (Bot API).
 
 ## Install (local checkout)
 
 ```bash
-clawdbot plugins install ./extensions/zalo
+botbot plugins install ./extensions/zalo
 ```
 
 ## Install (npm)
 
 ```bash
-clawdbot plugins install @clawdbot/zalo
+botbot plugins install @botbot/zalo
 ```
 
 Onboarding: select Zalo and confirm the install prompt to fetch the plugin automatically.

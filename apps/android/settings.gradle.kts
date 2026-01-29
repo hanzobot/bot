@@ -14,5 +14,5 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "ClawdbotNodeAndroid"
+rootProject.name = "BotNodeAndroid"
 include(":app")

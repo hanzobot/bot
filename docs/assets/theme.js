@@ -1,4 +1,4 @@
-const THEME_STORAGE_KEY = "clawdbot:theme";
+const THEME_STORAGE_KEY = "botbot:theme";
 
 function safeGet(key) {
   try {

@@ -1,4 +1,4 @@
-import type { ClawdbotConfig, RuntimeEnv } from "clawdbot/plugin-sdk";
+import type { BotConfig, RuntimeEnv } from "bot/plugin-sdk";
 import type { MSTeamsConversationStore } from "./conversation-store.js";
 import {
   buildFileInfoCard,
@@ -27,7 +27,7 @@ export type MSTeamsActivityHandler = {
 };
 
 export type MSTeamsMessageHandlerDeps = {
-  cfg: ClawdbotConfig;
+  cfg: BotConfig;
   runtime: RuntimeEnv;
   appId: string;
   adapter: MSTeamsAdapter;

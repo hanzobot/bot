@@ -27,10 +27,10 @@ async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
     },
     {
       env: {
-        CLAWDBOT_AGENT_DIR: (home) => path.join(home, ".clawdbot", "agent"),
-        PI_CODING_AGENT_DIR: (home) => path.join(home, ".clawdbot", "agent"),
+        BOT_AGENT_DIR: (home) => path.join(home, ".bot", "agent"),
+        PI_CODING_AGENT_DIR: (home) => path.join(home, ".bot", "agent"),
       },
-      prefix: "clawdbot-reply-",
+      prefix: "bot-reply-",
     },
   );
 }
@@ -82,7 +82,7 @@ describe("directive behavior", () => {
           agents: {
             defaults: {
               model: { primary: "anthropic/claude-opus-4-5" },
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "bot"),
               models: {
                 "anthropic/claude-opus-4-5": {},
                 "openai/gpt-4.1-mini": {},
@@ -132,7 +132,7 @@ describe("directive behavior", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "bot"),
             },
           },
           channels: { whatsapp: { allowFrom: ["*"] } },
@@ -169,7 +169,7 @@ describe("directive behavior", () => {
           agents: {
             defaults: {
               model: "anthropic/claude-opus-4-5",
-              workspace: path.join(home, "clawd"),
+              workspace: path.join(home, "bot"),
             },
           },
           tools: {

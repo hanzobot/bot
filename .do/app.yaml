@@ -1,0 +1,44 @@
+name: hanzobot
+region: nyc
+services:
+  - name: gateway
+    dockerfile_path: Dockerfile
+    http_port: 18789
+    instance_count: 1
+    instance_size_slug: professional-s
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 10
+      period_seconds: 30
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: HANZO_IAM_ENDPOINT
+        value: https://hanzo.id
+      - key: HANZO_CONSOLE_API_URL
+        value: https://cloud.hanzo.ai
+      - key: HANZO_CONSOLE_API_KEY
+        type: SECRET
+      - key: HANZOBOT_GATEWAY_TOKEN
+        type: SECRET
+      - key: HANZO_IAM_CLIENT_ID
+        value: hanzobot-client-id
+      - key: HANZO_IAM_CLIENT_SECRET
+        type: SECRET
+      - key: BOT_STATE_DIR
+        value: /data
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=1536"
+    routes:
+      - path: /
+    run_command: node dist/index.js gateway --bind lan --port 18789
+
+databases:
+  - name: redis
+    engine: REDIS
+    version: "7"
+    size: db-s-1vcpu-1gb
+    num_nodes: 1

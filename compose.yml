@@ -1,0 +1,61 @@
+services:
+  botd:
+    image: ${HANZOBOT_IMAGE:-${BOT_IMAGE:-bot:local}}
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      BOT_GATEWAY_TOKEN: ${HANZOBOT_GATEWAY_TOKEN:-${BOT_GATEWAY_TOKEN}}
+      CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
+      CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
+      CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
+      HANZO_IAM_ENDPOINT: ${HANZO_IAM_ENDPOINT:-}
+      HANZO_IAM_CLIENT_ID: ${HANZO_IAM_CLIENT_ID:-}
+      HANZO_IAM_CLIENT_SECRET: ${HANZO_IAM_CLIENT_SECRET:-}
+    volumes:
+      - ${HANZOBOT_CONFIG_DIR:-${BOT_CONFIG_DIR}}:/home/node/.bot
+      - ${HANZOBOT_WORKSPACE_DIR:-${BOT_WORKSPACE_DIR}}:/home/node/bot
+    ports:
+      - "${BOT_GATEWAY_PORT:-18789}:18789"
+      - "${BOT_BRIDGE_PORT:-18790}:18790"
+    init: true
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2048M
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    command:
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--bind",
+        "${BOT_GATEWAY_BIND:-lan}",
+        "--port",
+        "${BOT_GATEWAY_PORT:-18789}"
+      ]
+
+  bot-cli:
+    image: ${BOT_IMAGE:-bot:local}
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      BROWSER: echo
+      CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
+      CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
+      CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
+    volumes:
+      - ${BOT_CONFIG_DIR}:/home/node/.bot
+      - ${BOT_WORKSPACE_DIR}:/home/node/bot
+    stdin_open: true
+    tty: true
+    init: true
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1024M
+    entrypoint: ["node", "dist/index.js"]

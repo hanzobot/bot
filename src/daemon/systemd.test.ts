@@ -21,52 +21,52 @@ describe("systemd runtime parsing", () => {
 });
 
 describe("resolveSystemdUserUnitPath", () => {
-  it("uses default service name when CLAWDBOT_PROFILE is default", () => {
-    const env = { HOME: "/home/test", CLAWDBOT_PROFILE: "default" };
+  it("uses default service name when BOT_PROFILE is default", () => {
+    const env = { HOME: "/home/test", BOT_PROFILE: "default" };
     expect(resolveSystemdUserUnitPath(env)).toBe(
-      "/home/test/.config/systemd/user/clawdbot-gateway.service",
+      "/home/test/.config/systemd/user/botd.service",
     );
   });
 
-  it("uses default service name when CLAWDBOT_PROFILE is unset", () => {
+  it("uses default service name when BOT_PROFILE is unset", () => {
     const env = { HOME: "/home/test" };
     expect(resolveSystemdUserUnitPath(env)).toBe(
-      "/home/test/.config/systemd/user/clawdbot-gateway.service",
+      "/home/test/.config/systemd/user/botd.service",
     );
   });
 
-  it("uses profile-specific service name when CLAWDBOT_PROFILE is set to a custom value", () => {
-    const env = { HOME: "/home/test", CLAWDBOT_PROFILE: "jbphoenix" };
+  it("uses profile-specific service name when BOT_PROFILE is set to a custom value", () => {
+    const env = { HOME: "/home/test", BOT_PROFILE: "jbphoenix" };
     expect(resolveSystemdUserUnitPath(env)).toBe(
-      "/home/test/.config/systemd/user/clawdbot-gateway-jbphoenix.service",
+      "/home/test/.config/systemd/user/botd-jbphoenix.service",
     );
   });
 
-  it("prefers CLAWDBOT_SYSTEMD_UNIT over CLAWDBOT_PROFILE", () => {
+  it("prefers BOT_SYSTEMD_UNIT over BOT_PROFILE", () => {
     const env = {
       HOME: "/home/test",
-      CLAWDBOT_PROFILE: "jbphoenix",
-      CLAWDBOT_SYSTEMD_UNIT: "custom-unit",
+      BOT_PROFILE: "jbphoenix",
+      BOT_SYSTEMD_UNIT: "custom-unit",
     };
     expect(resolveSystemdUserUnitPath(env)).toBe(
       "/home/test/.config/systemd/user/custom-unit.service",
     );
   });
 
-  it("handles CLAWDBOT_SYSTEMD_UNIT with .service suffix", () => {
+  it("handles BOT_SYSTEMD_UNIT with .service suffix", () => {
     const env = {
       HOME: "/home/test",
-      CLAWDBOT_SYSTEMD_UNIT: "custom-unit.service",
+      BOT_SYSTEMD_UNIT: "custom-unit.service",
     };
     expect(resolveSystemdUserUnitPath(env)).toBe(
       "/home/test/.config/systemd/user/custom-unit.service",
     );
   });
 
-  it("trims whitespace from CLAWDBOT_SYSTEMD_UNIT", () => {
+  it("trims whitespace from BOT_SYSTEMD_UNIT", () => {
     const env = {
       HOME: "/home/test",
-      CLAWDBOT_SYSTEMD_UNIT: "  custom-unit  ",
+      BOT_SYSTEMD_UNIT: "  custom-unit  ",
     };
     expect(resolveSystemdUserUnitPath(env)).toBe(
       "/home/test/.config/systemd/user/custom-unit.service",
@@ -74,23 +74,23 @@ describe("resolveSystemdUserUnitPath", () => {
   });
 
   it("handles case-insensitive 'Default' profile", () => {
-    const env = { HOME: "/home/test", CLAWDBOT_PROFILE: "Default" };
+    const env = { HOME: "/home/test", BOT_PROFILE: "Default" };
     expect(resolveSystemdUserUnitPath(env)).toBe(
-      "/home/test/.config/systemd/user/clawdbot-gateway.service",
+      "/home/test/.config/systemd/user/botd.service",
     );
   });
 
   it("handles case-insensitive 'DEFAULT' profile", () => {
-    const env = { HOME: "/home/test", CLAWDBOT_PROFILE: "DEFAULT" };
+    const env = { HOME: "/home/test", BOT_PROFILE: "DEFAULT" };
     expect(resolveSystemdUserUnitPath(env)).toBe(
-      "/home/test/.config/systemd/user/clawdbot-gateway.service",
+      "/home/test/.config/systemd/user/botd.service",
     );
   });
 
-  it("trims whitespace from CLAWDBOT_PROFILE", () => {
-    const env = { HOME: "/home/test", CLAWDBOT_PROFILE: "  myprofile  " };
+  it("trims whitespace from BOT_PROFILE", () => {
+    const env = { HOME: "/home/test", BOT_PROFILE: "  myprofile  " };
     expect(resolveSystemdUserUnitPath(env)).toBe(
-      "/home/test/.config/systemd/user/clawdbot-gateway-myprofile.service",
+      "/home/test/.config/systemd/user/botd-myprofile.service",
     );
   });
 });

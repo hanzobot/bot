@@ -1,11 +1,11 @@
 ---
-summary: "CLI reference for `clawdbot hooks` (agent hooks)"
+summary: "CLI reference for `bot hooks` (agent hooks)"
 read_when:
   - You want to manage agent hooks
   - You want to install or update hooks
 ---
 
-# `clawdbot hooks`
+# `bot hooks`
 
 Manage agent hooks (event-driven automations for commands like `/new`, `/reset`, and gateway startup).
 
@@ -16,7 +16,7 @@ Related:
 ## List All Hooks
 
 ```bash
-clawdbot hooks list
+bot hooks list
 ```
 
 List all discovered hooks from workspace, managed, and bundled directories.
@@ -41,7 +41,7 @@ Ready:
 **Example (verbose):**
 
 ```bash
-clawdbot hooks list --verbose
+bot hooks list --verbose
 ```
 
 Shows missing requirements for ineligible hooks.
@@ -49,7 +49,7 @@ Shows missing requirements for ineligible hooks.
 **Example (JSON):**
 
 ```bash
-clawdbot hooks list --json
+bot hooks list --json
 ```
 
 Returns structured JSON for programmatic use.
@@ -57,7 +57,7 @@ Returns structured JSON for programmatic use.
 ## Get Hook Information
 
 ```bash
-clawdbot hooks info <name>
+bot hooks info <name>
 ```
 
 Show detailed information about a specific hook.
@@ -71,7 +71,7 @@ Show detailed information about a specific hook.
 **Example:**
 
 ```bash
-clawdbot hooks info session-memory
+bot hooks info session-memory
 ```
 
 **Output:**
@@ -82,10 +82,10 @@ clawdbot hooks info session-memory
 Save session context to memory when /new command is issued
 
 Details:
-  Source: clawdbot-bundled
-  Path: /path/to/clawdbot/hooks/bundled/session-memory/HOOK.md
-  Handler: /path/to/clawdbot/hooks/bundled/session-memory/handler.ts
-  Homepage: https://docs.clawd.bot/hooks#session-memory
+  Source: bot-bundled
+  Path: /path/to/bot/hooks/bundled/session-memory/HOOK.md
+  Handler: /path/to/bot/hooks/bundled/session-memory/handler.ts
+  Homepage: https://docs.bot.hanzo.ai/hooks#session-memory
   Events: command:new
 
 Requirements:
@@ -95,7 +95,7 @@ Requirements:
 ## Check Hooks Eligibility
 
 ```bash
-clawdbot hooks check
+bot hooks check
 ```
 
 Show summary of hook eligibility status (how many are ready vs. not ready).
@@ -116,12 +116,12 @@ Not ready: 0
 ## Enable a Hook
 
 ```bash
-clawdbot hooks enable <name>
+bot hooks enable <name>
 ```
 
-Enable a specific hook by adding it to your config (`~/.clawdbot/config.json`).
+Enable a specific hook by adding it to your config (`~/.bot/config.json`).
 
-**Note:** Hooks managed by plugins show `plugin:<id>` in `clawdbot hooks list` and
+**Note:** Hooks managed by plugins show `plugin:<id>` in `bot hooks list` and
 can’t be enabled/disabled here. Enable/disable the plugin instead.
 
 **Arguments:**
@@ -130,7 +130,7 @@ can’t be enabled/disabled here. Enable/disable the plugin instead.
 **Example:**
 
 ```bash
-clawdbot hooks enable session-memory
+bot hooks enable session-memory
 ```
 
 **Output:**
@@ -150,7 +150,7 @@ clawdbot hooks enable session-memory
 ## Disable a Hook
 
 ```bash
-clawdbot hooks disable <name>
+bot hooks disable <name>
 ```
 
 Disable a specific hook by updating your config.
@@ -161,7 +161,7 @@ Disable a specific hook by updating your config.
 **Example:**
 
 ```bash
-clawdbot hooks disable command-logger
+bot hooks disable command-logger
 ```
 
 **Output:**
@@ -176,13 +176,13 @@ clawdbot hooks disable command-logger
 ## Install Hooks
 
 ```bash
-clawdbot hooks install <path-or-spec>
+bot hooks install <path-or-spec>
 ```
 
 Install a hook pack from a local folder/archive or npm.
 
 **What it does:**
-- Copies the hook pack into `~/.clawdbot/hooks/<id>`
+- Copies the hook pack into `~/.bot/hooks/<id>`
 - Enables the installed hooks in `hooks.internal.entries.*`
 - Records the install under `hooks.internal.installs`
 
@@ -195,23 +195,23 @@ Install a hook pack from a local folder/archive or npm.
 
 ```bash
 # Local directory
-clawdbot hooks install ./my-hook-pack
+bot hooks install ./my-hook-pack
 
 # Local archive
-clawdbot hooks install ./my-hook-pack.zip
+bot hooks install ./my-hook-pack.zip
 
 # NPM package
-clawdbot hooks install @clawdbot/my-hook-pack
+bot hooks install @bot/my-hook-pack
 
 # Link a local directory without copying
-clawdbot hooks install -l ./my-hook-pack
+bot hooks install -l ./my-hook-pack
 ```
 
 ## Update Hooks
 
 ```bash
-clawdbot hooks update <id>
-clawdbot hooks update --all
+bot hooks update <id>
+bot hooks update --all
 ```
 
 Update installed hook packs (npm installs only).
@@ -229,10 +229,10 @@ Saves session context to memory when you issue `/new`.
 **Enable:**
 
 ```bash
-clawdbot hooks enable session-memory
+bot hooks enable session-memory
 ```
 
-**Output:** `~/clawd/memory/YYYY-MM-DD-slug.md`
+**Output:** `~/bot/memory/YYYY-MM-DD-slug.md`
 
 **See:** [session-memory documentation](/hooks#session-memory)
 
@@ -243,22 +243,22 @@ Logs all command events to a centralized audit file.
 **Enable:**
 
 ```bash
-clawdbot hooks enable command-logger
+bot hooks enable command-logger
 ```
 
-**Output:** `~/.clawdbot/logs/commands.log`
+**Output:** `~/.bot/logs/commands.log`
 
 **View logs:**
 
 ```bash
 # Recent commands
-tail -n 20 ~/.clawdbot/logs/commands.log
+tail -n 20 ~/.bot/logs/commands.log
 
 # Pretty-print
-cat ~/.clawdbot/logs/commands.log | jq .
+cat ~/.bot/logs/commands.log | jq .
 
 # Filter by action
-grep '"action":"new"' ~/.clawdbot/logs/commands.log | jq .
+grep '"action":"new"' ~/.bot/logs/commands.log | jq .
 ```
 
 **See:** [command-logger documentation](/hooks#command-logger)
@@ -270,7 +270,7 @@ Swaps injected `SOUL.md` content with `SOUL_EVIL.md` during a purge window or by
 **Enable:**
 
 ```bash
-clawdbot hooks enable soul-evil
+bot hooks enable soul-evil
 ```
 
 **See:** [SOUL Evil Hook](/hooks/soul-evil)
@@ -284,7 +284,7 @@ Runs `BOOT.md` when the gateway starts (after channels start).
 **Enable**:
 
 ```bash
-clawdbot hooks enable boot-md
+bot hooks enable boot-md
 ```
 
 **See:** [boot-md documentation](/hooks#boot-md)

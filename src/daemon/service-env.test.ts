@@ -223,25 +223,25 @@ describe("buildServiceEnvironment", () => {
     } else {
       expect(env.PATH).toContain("/usr/bin");
     }
-    expect(env.CLAWDBOT_GATEWAY_PORT).toBe("18789");
-    expect(env.CLAWDBOT_GATEWAY_TOKEN).toBe("secret");
-    expect(env.CLAWDBOT_SERVICE_MARKER).toBe("clawdbot");
-    expect(env.CLAWDBOT_SERVICE_KIND).toBe("gateway");
-    expect(typeof env.CLAWDBOT_SERVICE_VERSION).toBe("string");
-    expect(env.CLAWDBOT_SYSTEMD_UNIT).toBe("clawdbot-gateway.service");
+    expect(env.BOT_GATEWAY_PORT).toBe("18789");
+    expect(env.BOT_GATEWAY_TOKEN).toBe("secret");
+    expect(env.BOT_SERVICE_MARKER).toBe("bot");
+    expect(env.BOT_SERVICE_KIND).toBe("gateway");
+    expect(typeof env.BOT_SERVICE_VERSION).toBe("string");
+    expect(env.BOT_SYSTEMD_UNIT).toBe("botd.service");
     if (process.platform === "darwin") {
-      expect(env.CLAWDBOT_LAUNCHD_LABEL).toBe("com.clawdbot.gateway");
+      expect(env.BOT_LAUNCHD_LABEL).toBe("com.bot.gateway");
     }
   });
 
   it("uses profile-specific unit and label", () => {
     const env = buildServiceEnvironment({
-      env: { HOME: "/home/user", CLAWDBOT_PROFILE: "work" },
+      env: { HOME: "/home/user", BOT_PROFILE: "work" },
       port: 18789,
     });
-    expect(env.CLAWDBOT_SYSTEMD_UNIT).toBe("clawdbot-gateway-work.service");
+    expect(env.BOT_SYSTEMD_UNIT).toBe("botd-work.service");
     if (process.platform === "darwin") {
-      expect(env.CLAWDBOT_LAUNCHD_LABEL).toBe("com.clawdbot.work");
+      expect(env.BOT_LAUNCHD_LABEL).toBe("com.bot.work");
     }
   });
 });

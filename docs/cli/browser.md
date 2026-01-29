@@ -1,14 +1,14 @@
 ---
-summary: "CLI reference for `clawdbot browser` (profiles, tabs, actions, extension relay, remote serve)"
+summary: "CLI reference for `bot browser` (profiles, tabs, actions, extension relay, remote serve)"
 read_when:
-  - You use `clawdbot browser` and want examples for common tasks
+  - You use `bot browser` and want examples for common tasks
   - You want to control a remote browser via `browser.controlUrl`
   - You want to use the Chrome extension relay (attach/detach via toolbar button)
 ---
 
-# `clawdbot browser`
+# `bot browser`
 
-Manage Clawdbot’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
+Manage Bot’s browser control server and run browser actions (tabs, snapshots, screenshots, navigation, clicks, typing).
 
 Related:
 - Browser tool + API: [Browser tool](/tools/browser)
@@ -23,37 +23,37 @@ Related:
 ## Quick start (local)
 
 ```bash
-clawdbot browser --browser-profile chrome tabs
-clawdbot browser --browser-profile clawd start
-clawdbot browser --browser-profile clawd open https://example.com
-clawdbot browser --browser-profile clawd snapshot
+bot browser --browser-profile chrome tabs
+bot browser --browser-profile bot start
+bot browser --browser-profile bot open https://example.com
+bot browser --browser-profile bot snapshot
 ```
 
 ## Profiles
 
 Profiles are named browser routing configs. In practice:
-- `clawd`: launches/attaches to a dedicated Clawdbot-managed Chrome instance (isolated user data dir).
+- `bot`: launches/attaches to a dedicated Bot-managed Chrome instance (isolated user data dir).
 - `chrome`: controls your existing Chrome tab(s) via the Chrome extension relay.
 
 ```bash
-clawdbot browser profiles
-clawdbot browser create-profile --name work --color "#FF5A36"
-clawdbot browser delete-profile --name work
+bot browser profiles
+bot browser create-profile --name work --color "#FF5A36"
+bot browser delete-profile --name work
 ```
 
 Use a specific profile:
 
 ```bash
-clawdbot browser --browser-profile work tabs
+bot browser --browser-profile work tabs
 ```
 
 ## Tabs
 
 ```bash
-clawdbot browser tabs
-clawdbot browser open https://docs.clawd.bot
-clawdbot browser focus <targetId>
-clawdbot browser close <targetId>
+bot browser tabs
+bot browser open https://docs.bot.hanzo.ai
+bot browser focus <targetId>
+bot browser close <targetId>
 ```
 
 ## Snapshot / screenshot / actions
@@ -61,21 +61,21 @@ clawdbot browser close <targetId>
 Snapshot:
 
 ```bash
-clawdbot browser snapshot
+bot browser snapshot
 ```
 
 Screenshot:
 
 ```bash
-clawdbot browser screenshot
+bot browser screenshot
 ```
 
 Navigate/click/type (ref-based UI automation):
 
 ```bash
-clawdbot browser navigate https://example.com
-clawdbot browser click <ref>
-clawdbot browser type <ref> "hello"
+bot browser navigate https://example.com
+bot browser click <ref>
+bot browser type <ref> "hello"
 ```
 
 ## Chrome extension relay (attach via toolbar button)
@@ -85,22 +85,22 @@ This mode lets the agent control an existing Chrome tab that you attach manually
 Install the unpacked extension to a stable path:
 
 ```bash
-clawdbot browser extension install
-clawdbot browser extension path
+bot browser extension install
+bot browser extension path
 ```
 
 Then Chrome → `chrome://extensions` → enable “Developer mode” → “Load unpacked” → select the printed folder.
 
 Full guide: [Chrome extension](/tools/chrome-extension)
 
-## Remote browser control (`clawdbot browser serve`)
+## Remote browser control (`bot browser serve`)
 
 If the Gateway runs on a different machine than the browser, run a standalone browser control server on the machine that runs Chrome:
 
 ```bash
-clawdbot browser serve --bind 127.0.0.1 --port 18791 --token <token>
+bot browser serve --bind 127.0.0.1 --port 18791 --token <token>
 ```
 
-Then point the Gateway at it using `browser.controlUrl` + `browser.controlToken` (or `CLAWDBOT_BROWSER_CONTROL_TOKEN`).
+Then point the Gateway at it using `browser.controlUrl` + `browser.controlToken` (or `BOT_BROWSER_CONTROL_TOKEN`).
 
 Security + TLS best-practices: [Browser tool](/tools/browser), [Tailscale](/gateway/tailscale), [Security](/gateway/security)

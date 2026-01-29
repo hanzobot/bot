@@ -1,12 +1,12 @@
 import Foundation
 import Testing
-@testable import Clawdbot
+@testable import Bot
 
 @Suite struct VoiceWakeGatewaySyncTests {
     @Test func decodeGatewayTriggersFromJSONSanitizes() {
-        let payload = #"{"triggers":[" clawd  ","", "computer"]}"#
+        let payload = #"{"triggers":[" bot  ","", "computer"]}"#
         let triggers = VoiceWakePreferences.decodeGatewayTriggers(from: payload)
-        #expect(triggers == ["clawd", "computer"])
+        #expect(triggers == ["bot", "computer"])
     }
 
     @Test func decodeGatewayTriggersFromJSONFallsBackWhenEmpty() {

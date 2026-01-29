@@ -1,22 +1,26 @@
 import { timingSafeEqual } from "node:crypto";
 import type { IncomingMessage } from "node:http";
-import type { GatewayAuthConfig, GatewayTailscaleMode } from "../config/config.js";
+import type { GatewayAuthConfig, GatewayIamConfig, GatewayTailscaleMode } from "../config/config.js";
 import { readTailscaleWhoisIdentity, type TailscaleWhoisIdentity } from "../infra/tailscale.js";
 import { isTrustedProxyAddress, parseForwardedForClientIp, resolveGatewayClientIp } from "./net.js";
-export type ResolvedGatewayAuthMode = "none" | "token" | "password";
+import { validateIamToken, type IamTokenClaims } from "./auth-iam.js";
+export type ResolvedGatewayAuthMode = "none" | "token" | "password" | "iam";
 
 export type ResolvedGatewayAuth = {
   mode: ResolvedGatewayAuthMode;
   token?: string;
   password?: string;
   allowTailscale: boolean;
+  iam?: GatewayIamConfig;
 };
 
 export type GatewayAuthResult = {
   ok: boolean;
-  method?: "none" | "token" | "password" | "tailscale" | "device-token";
+  method?: "none" | "token" | "password" | "tailscale" | "device-token" | "iam";
   user?: string;
   reason?: string;
+  /** IAM token claims (populated when method is "iam"). */
+  iamClaims?: IamTokenClaims;
 };
 
 type ConnectAuth = {
@@ -171,16 +175,32 @@ export function resolveGatewayAuth(params: {
 }): ResolvedGatewayAuth {
   const authConfig = params.authConfig ?? {};
   const env = params.env ?? process.env;
-  const token = authConfig.token ?? env.CLAWDBOT_GATEWAY_TOKEN ?? undefined;
-  const password = authConfig.password ?? env.CLAWDBOT_GATEWAY_PASSWORD ?? undefined;
-  const mode: ResolvedGatewayAuth["mode"] = authConfig.mode ?? (password ? "password" : "token");
+  const token = authConfig.token ?? env.BOT_GATEWAY_TOKEN ?? env.HANZOBOT_GATEWAY_TOKEN ?? undefined;
+  const password = authConfig.password ?? env.BOT_GATEWAY_PASSWORD ?? env.HANZOBOT_GATEWAY_PASSWORD ?? undefined;
+
+  // Resolve IAM config from config or env
+  const iamEndpoint = authConfig.iam?.endpoint ?? env.HANZO_IAM_ENDPOINT ?? undefined;
+  const iamClientId = authConfig.iam?.clientId ?? env.HANZO_IAM_CLIENT_ID ?? undefined;
+  const iam: GatewayIamConfig | undefined = iamEndpoint && iamClientId
+    ? {
+        endpoint: iamEndpoint,
+        clientId: iamClientId,
+        clientSecret: authConfig.iam?.clientSecret ?? env.HANZO_IAM_CLIENT_SECRET ?? undefined,
+        allowedOrgs: authConfig.iam?.allowedOrgs,
+      }
+    : undefined;
+
+  const mode: ResolvedGatewayAuth["mode"] =
+    authConfig.mode ?? (iam ? "iam" : password ? "password" : "token");
+
   const allowTailscale =
-    authConfig.allowTailscale ?? (params.tailscaleMode === "serve" && mode !== "password");
+    authConfig.allowTailscale ?? (params.tailscaleMode === "serve" && mode !== "password" && mode !== "iam");
   return {
     mode,
     token,
     password,
     allowTailscale,
+    iam,
   };
 }
 
@@ -188,11 +208,16 @@ export function assertGatewayAuthConfigured(auth: ResolvedGatewayAuth): void {
   if (auth.mode === "token" && !auth.token) {
     if (auth.allowTailscale) return;
     throw new Error(
-      "gateway auth mode is token, but no token was configured (set gateway.auth.token or CLAWDBOT_GATEWAY_TOKEN)",
+      "gateway auth mode is token, but no token was configured (set gateway.auth.token or BOT_GATEWAY_TOKEN)",
     );
   }
   if (auth.mode === "password" && !auth.password) {
     throw new Error("gateway auth mode is password, but no password was configured");
+  }
+  if (auth.mode === "iam" && !auth.iam) {
+    throw new Error(
+      "gateway auth mode is iam, but no IAM config was provided (set HANZO_IAM_ENDPOINT and HANZO_IAM_CLIENT_ID)",
+    );
   }
 }
 
@@ -253,6 +278,40 @@ export async function authorizeGatewayConnect(params: {
       return { ok: false, reason: "password_mismatch" };
     }
     return { ok: true, method: "password" };
+  }
+
+  if (auth.mode === "iam") {
+    if (!auth.iam) {
+      return { ok: false, reason: "iam_missing_config" };
+    }
+    // Try Bearer JWT token
+    const bearerToken = connectAuth?.token;
+    if (!bearerToken) {
+      // Fall back to static token auth if also configured
+      if (auth.token && connectAuth?.token && safeEqual(connectAuth.token, auth.token)) {
+        return { ok: true, method: "token" };
+      }
+      return { ok: false, reason: "iam_token_missing" };
+    }
+    const iamResult = await validateIamToken(bearerToken, {
+      endpoint: auth.iam.endpoint,
+      clientId: auth.iam.clientId,
+      clientSecret: auth.iam.clientSecret,
+      allowedOrgs: auth.iam.allowedOrgs,
+    });
+    if (!iamResult.ok) {
+      // Fall back to static token auth if the JWT is not valid but a static token matches
+      if (auth.token && safeEqual(bearerToken, auth.token)) {
+        return { ok: true, method: "token" };
+      }
+      return { ok: false, reason: iamResult.reason ?? "iam_auth_failed" };
+    }
+    return {
+      ok: true,
+      method: "iam",
+      user: iamResult.claims?.email ?? iamResult.claims?.sub,
+      iamClaims: iamResult.claims,
+    };
   }
 
   return { ok: false, reason: "unauthorized" };

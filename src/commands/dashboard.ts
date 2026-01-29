@@ -23,7 +23,7 @@ export async function dashboardCommand(
   const bind = cfg.gateway?.bind ?? "loopback";
   const basePath = cfg.gateway?.controlUi?.basePath;
   const customBindHost = cfg.gateway?.customBindHost;
-  const token = cfg.gateway?.auth?.token ?? process.env.CLAWDBOT_GATEWAY_TOKEN ?? "";
+  const token = cfg.gateway?.auth?.token ?? process.env.BOT_GATEWAY_TOKEN ?? "";
 
   const links = resolveControlUiLinks({
     port,
@@ -57,7 +57,7 @@ export async function dashboardCommand(
   }
 
   if (opened) {
-    runtime.log("Opened in your browser. Keep that tab to control Clawdbot.");
+    runtime.log("Opened in your browser. Keep that tab to control Bot.");
   } else if (hint) {
     runtime.log(hint);
   }

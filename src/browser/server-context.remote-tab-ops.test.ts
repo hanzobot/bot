@@ -5,15 +5,15 @@ import type { BrowserServerState } from "./server-context.js";
 vi.mock("./chrome.js", () => ({
   isChromeCdpReady: vi.fn(async () => true),
   isChromeReachable: vi.fn(async () => true),
-  launchClawdChrome: vi.fn(async () => {
+  launchBotChrome: vi.fn(async () => {
     throw new Error("unexpected launch");
   }),
-  resolveClawdUserDataDir: vi.fn(() => "/tmp/clawd"),
-  stopClawdChrome: vi.fn(async () => {}),
+  resolveBotUserDataDir: vi.fn(() => "/tmp/bot"),
+  stopBotChrome: vi.fn(async () => {}),
 }));
 
 function makeState(
-  profile: "remote" | "clawd",
+  profile: "remote" | "bot",
 ): BrowserServerState & { profiles: Map<string, { lastTargetId?: string | null }> } {
   return {
     // biome-ignore lint/suspicious/noExplicitAny: test stub
@@ -40,7 +40,7 @@ function makeState(
           cdpPort: 443,
           color: "#00AA00",
         },
-        clawd: { cdpPort: 18800, color: "#FF4500" },
+        bot: { cdpPort: 18800, color: "#FF4500" },
       },
     },
     profiles: new Map(),
@@ -274,12 +274,12 @@ describe("browser server-context tab selection state", () => {
     global.fetch = fetchMock;
 
     const { createBrowserRouteContext } = await import("./server-context.js");
-    const state = makeState("clawd");
+    const state = makeState("bot");
     const ctx = createBrowserRouteContext({ getState: () => state });
-    const clawd = ctx.forProfile("clawd");
+    const bot = ctx.forProfile("bot");
 
-    const opened = await clawd.openTab("https://created.example");
+    const opened = await bot.openTab("https://created.example");
     expect(opened.targetId).toBe("CREATED");
-    expect(state.profiles.get("clawd")?.lastTargetId).toBe("CREATED");
+    expect(state.profiles.get("bot")?.lastTargetId).toBe("CREATED");
   });
 });

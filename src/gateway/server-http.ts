@@ -30,6 +30,7 @@ import { applyHookMappings } from "./hooks-mapping.js";
 import { handleOpenAiHttpRequest } from "./openai-http.js";
 import { handleOpenResponsesHttpRequest } from "./openresponses-http.js";
 import { handleToolsInvokeHttpRequest } from "./tools-invoke-http.js";
+import type { GatewayRateLimiters } from "./rate-limit.js";
 
 type SubsystemLogger = ReturnType<typeof createSubsystemLogger>;
 
@@ -54,6 +55,68 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(body));
+}
+
+// ---------------------------------------------------------------------------
+// Security headers
+// ---------------------------------------------------------------------------
+
+const SECURITY_HEADERS: Record<string, string> = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "X-XSS-Protection": "0", // modern browsers; CSP preferred
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss: ws:; frame-ancestors 'none'",
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+};
+
+function applySecurityHeaders(res: ServerResponse): void {
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    res.setHeader(key, value);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// CORS
+// ---------------------------------------------------------------------------
+
+const DEFAULT_CORS_ORIGINS = [
+  "https://bot.hanzo.ai",
+  "https://cloud.hanzo.ai",
+  "https://platform.hanzo.ai",
+  "https://hanzo.ai",
+];
+
+function resolveCorsOrigins(): string[] {
+  const envOrigins = process.env.HANZOBOT_CORS_ORIGINS?.trim();
+  if (envOrigins) return envOrigins.split(",").map((o) => o.trim()).filter(Boolean);
+  return DEFAULT_CORS_ORIGINS;
+}
+
+function handleCors(req: IncomingMessage, res: ServerResponse): boolean {
+  const origin = req.headers.origin;
+  if (!origin) return false;
+
+  const allowed = resolveCorsOrigins();
+  // Allow localhost in dev
+  const isAllowed = allowed.includes(origin) || origin.startsWith("http://localhost:");
+
+  if (isAllowed) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Bot-Agent-Id, X-Bot-Agent, X-Bot-Session-Key, X-Bot-Token, X-Hanzobot-Agent-Id, X-Hanzobot-Agent, X-Hanzobot-Session-Key, X-Hanzobot-Token");
+    res.setHeader("Access-Control-Max-Age", "86400");
+    res.setHeader("Vary", "Origin");
+  }
+
+  // Handle preflight
+  if (req.method === "OPTIONS") {
+    res.statusCode = isAllowed ? 204 : 403;
+    res.end();
+    return true;
+  }
+  return false;
 }
 
 export type HooksRequestHandler = (req: IncomingMessage, res: ServerResponse) => Promise<boolean>;
@@ -87,7 +150,7 @@ export function createHooksRequestHandler(
       logHooks.warn(
         "Hook token provided via query parameter is deprecated for security reasons. " +
           "Tokens in URLs appear in logs, browser history, and referrer headers. " +
-          "Use Authorization: Bearer <token> or X-Clawdbot-Token header instead.",
+          "Use Authorization: Bearer <token> or X-Bot-Token header instead.",
       );
     }
 
@@ -211,6 +274,7 @@ export function createGatewayHttpServer(opts: {
   handlePluginRequest?: HooksRequestHandler;
   resolvedAuth: import("./auth.js").ResolvedGatewayAuth;
   tlsOptions?: TlsOptions;
+  rateLimiters?: GatewayRateLimiters;
 }): HttpServer {
   const {
     canvasHost,
@@ -222,6 +286,7 @@ export function createGatewayHttpServer(opts: {
     handleHooksRequest,
     handlePluginRequest,
     resolvedAuth,
+    rateLimiters,
   } = opts;
   const httpServer: HttpServer = opts.tlsOptions
     ? createHttpsServer(opts.tlsOptions, (req, res) => {
@@ -235,9 +300,27 @@ export function createGatewayHttpServer(opts: {
     // Don't interfere with WebSocket upgrades; ws handles the 'upgrade' event.
     if (String(req.headers.upgrade ?? "").toLowerCase() === "websocket") return;
 
+    // Apply security headers to all responses
+    applySecurityHeaders(res);
+
+    // Handle CORS preflight and set headers
+    if (handleCors(req, res)) return;
+
     try {
       const configSnapshot = loadConfig();
       const trustedProxies = configSnapshot.gateway?.trustedProxies ?? [];
+
+      // Rate limiting (per-IP for all requests)
+      if (rateLimiters) {
+        const clientIp = req.socket?.remoteAddress ?? "unknown";
+        const result = rateLimiters.apiPerToken.consume(clientIp);
+        if (!result.allowed) {
+          res.setHeader("Retry-After", String(Math.ceil((result.retryAfterMs ?? 1000) / 1000)));
+          sendJson(res, 429, { ok: false, error: "Too Many Requests" });
+          return;
+        }
+      }
+
       if (await handleHooksRequest(req, res)) return;
       if (
         await handleToolsInvokeHttpRequest(req, res, {

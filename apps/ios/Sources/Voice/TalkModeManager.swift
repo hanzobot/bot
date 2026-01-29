@@ -1,6 +1,6 @@
 import AVFAudio
-import ClawdbotKit
-import ClawdbotProtocol
+import BotKit
+import BotProtocol
 import Foundation
 import Observation
 import OSLog
@@ -48,7 +48,7 @@ final class TalkModeManager: NSObject {
 
     private var chatSubscribedSessionKeys = Set<String>()
 
-    private let logger = Logger(subsystem: "com.clawdbot", category: "TalkMode")
+    private let logger = Logger(subsystem: "com.bot", category: "TalkMode")
 
     func attachGateway(_ gateway: GatewayNodeSession) {
         self.gateway = gateway

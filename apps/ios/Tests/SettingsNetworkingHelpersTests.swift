@@ -1,5 +1,5 @@
 import Testing
-@testable import Clawdbot
+@testable import Bot
 
 @Suite struct SettingsNetworkingHelpersTests {
     @Test func parseHostPortParsesIPv4() {

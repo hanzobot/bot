@@ -1,13 +1,13 @@
 ---
-summary: "CLI reference for `clawdbot setup` (initialize config + workspace)"
+summary: "CLI reference for `bot setup` (initialize config + workspace)"
 read_when:
   - You’re doing first-run setup without the full onboarding wizard
   - You want to set the default workspace path
 ---
 
-# `clawdbot setup`
+# `bot setup`
 
-Initialize `~/.clawdbot/clawdbot.json` and the agent workspace.
+Initialize `~/.bot/bot.json` and the agent workspace.
 
 Related:
 - Getting started: [Getting started](/start/getting-started)
@@ -16,13 +16,13 @@ Related:
 ## Examples
 
 ```bash
-clawdbot setup
-clawdbot setup --workspace ~/clawd
+bot setup
+bot setup --workspace ~/bot
 ```
 
 To run the wizard via setup:
 
 ```bash
-clawdbot setup --wizard
+bot setup --wizard
 ```
 

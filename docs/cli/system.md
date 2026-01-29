@@ -1,12 +1,12 @@
 ---
-summary: "CLI reference for `clawdbot system` (system events, heartbeat, presence)"
+summary: "CLI reference for `bot system` (system events, heartbeat, presence)"
 read_when:
   - You want to enqueue a system event without creating a cron job
   - You need to enable or disable heartbeats
   - You want to inspect system presence entries
 ---
 
-# `clawdbot system`
+# `bot system`
 
 System-level helpers for the Gateway: enqueue system events, control heartbeats,
 and view presence.
@@ -14,10 +14,10 @@ and view presence.
 ## Common commands
 
 ```bash
-clawdbot system event --text "Check for urgent follow-ups" --mode now
-clawdbot system heartbeat enable
-clawdbot system heartbeat last
-clawdbot system presence
+bot system event --text "Check for urgent follow-ups" --mode now
+bot system heartbeat enable
+bot system heartbeat last
+bot system presence
 ```
 
 ## `system event`

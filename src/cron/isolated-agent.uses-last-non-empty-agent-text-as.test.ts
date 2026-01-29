@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
 import type { CliDeps } from "../cli/deps.js";
-import type { ClawdbotConfig } from "../config/config.js";
+import type { BotConfig } from "../config/config.js";
 import type { CronJob } from "./types.js";
 
 vi.mock("../agents/pi-embedded.js", () => ({
@@ -22,11 +22,11 @@ import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
 import { runCronIsolatedAgentTurn } from "./isolated-agent.js";
 
 async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
-  return withTempHomeBase(fn, { prefix: "clawdbot-cron-" });
+  return withTempHomeBase(fn, { prefix: "bot-cron-" });
 }
 
 async function writeSessionStore(home: string) {
-  const dir = path.join(home, ".clawdbot", "sessions");
+  const dir = path.join(home, ".bot", "sessions");
   await fs.mkdir(dir, { recursive: true });
   const storePath = path.join(dir, "sessions.json");
   await fs.writeFile(
@@ -57,17 +57,17 @@ async function readSessionEntry(storePath: string, key: string) {
 function makeCfg(
   home: string,
   storePath: string,
-  overrides: Partial<ClawdbotConfig> = {},
-): ClawdbotConfig {
-  const base: ClawdbotConfig = {
+  overrides: Partial<BotConfig> = {},
+): BotConfig {
+  const base: BotConfig = {
     agents: {
       defaults: {
         model: "anthropic/claude-opus-4-5",
-        workspace: path.join(home, "clawd"),
+        workspace: path.join(home, "bot"),
       },
     },
     session: { store: storePath, mainKey: "main" },
-  } as ClawdbotConfig;
+  } as BotConfig;
   return { ...base, ...overrides };
 }
 
@@ -182,7 +182,7 @@ describe("runCronIsolatedAgentTurn", () => {
 
       const cfg = makeCfg(
         home,
-        path.join(home, ".clawdbot", "agents", "{agentId}", "sessions", "sessions.json"),
+        path.join(home, ".bot", "agents", "{agentId}", "sessions", "sessions.json"),
         {
           agents: {
             defaults: { workspace: path.join(home, "default-workspace") },

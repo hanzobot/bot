@@ -1,4 +1,5 @@
-FROM node:22-bookworm
+# Stage 1: Build
+FROM node:22-bookworm AS builder
 
 # Install Bun (required for build scripts)
 RUN curl -fsSL https://bun.sh/install | bash
@@ -8,10 +9,10 @@ RUN corepack enable
 
 WORKDIR /app
 
-ARG CLAWDBOT_DOCKER_APT_PACKAGES=""
-RUN if [ -n "$CLAWDBOT_DOCKER_APT_PACKAGES" ]; then \
+ARG BOT_DOCKER_APT_PACKAGES=""
+RUN if [ -n "$BOT_DOCKER_APT_PACKAGES" ]; then \
       apt-get update && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $CLAWDBOT_DOCKER_APT_PACKAGES && \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $BOT_DOCKER_APT_PACKAGES && \
       apt-get clean && \
       rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*; \
     fi
@@ -26,9 +27,24 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 # Force pnpm for UI build (Bun may fail on ARM/Synology architectures)
-ENV CLAWDBOT_PREFER_PNPM=1
+ENV BOT_PREFER_PNPM=1
 RUN pnpm ui:install
 RUN pnpm ui:build
+
+# Stage 2: Production runtime
+FROM node:22-bookworm-slim AS runtime
+
+RUN corepack enable
+
+WORKDIR /app
+
+# Copy built artifacts and production dependencies
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /app/ui ./ui
+COPY --from=builder /app/scripts ./scripts
 
 ENV NODE_ENV=production
 

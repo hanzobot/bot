@@ -5,7 +5,7 @@ import path from "node:path";
 import type { Command } from "commander";
 
 import { readConfigFileSnapshot, writeConfigFile } from "../config/config.js";
-import { resolveClawdbotPackageRoot } from "../infra/clawdbot-root.js";
+import { resolveBotPackageRoot } from "../infra/bot-root.js";
 import {
   checkUpdateStatus,
   compareSemverStrings,
@@ -80,7 +80,7 @@ const STEP_LABELS: Record<string, string> = {
   "deps install": "Installing dependencies",
   build: "Building",
   "ui:build": "Building UI",
-  "clawdbot doctor": "Running doctor checks",
+  "bot doctor": "Running doctor checks",
   "git rev-parse HEAD (after)": "Verifying update",
   "global update": "Updating via package manager",
   "global install": "Installing global package",
@@ -110,14 +110,14 @@ const UPDATE_QUIPS = [
 ];
 
 const MAX_LOG_CHARS = 8000;
-const CLAWDBOT_REPO_URL = "https://github.com/clawdbot/clawdbot.git";
-const DEFAULT_GIT_DIR = path.join(os.homedir(), "clawdbot");
+const BOT_REPO_URL = "https://github.com/bot/bot.git";
+const DEFAULT_GIT_DIR = path.join(os.homedir(), "bot");
 
 function normalizeTag(value?: string | null): string | null {
   if (!value) return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
-  return trimmed.startsWith("clawdbot@") ? trimmed.slice("clawdbot@".length) : trimmed;
+  return trimmed.startsWith("bot@") ? trimmed.slice("bot@".length) : trimmed;
 }
 
 function pickUpdateQuip(): string {
@@ -157,11 +157,11 @@ async function isGitCheckout(root: string): Promise<boolean> {
   }
 }
 
-async function isClawdbotPackage(root: string): Promise<boolean> {
+async function isBotPackage(root: string): Promise<boolean> {
   try {
     const raw = await fs.readFile(path.join(root, "package.json"), "utf-8");
     const parsed = JSON.parse(raw) as { name?: string };
-    return parsed?.name === "clawdbot";
+    return parsed?.name === "bot";
   } catch {
     return false;
   }
@@ -186,7 +186,7 @@ async function isEmptyDir(targetPath: string): Promise<boolean> {
 }
 
 function resolveGitInstallDir(): string {
-  const override = process.env.CLAWDBOT_GIT_DIR?.trim();
+  const override = process.env.BOT_GIT_DIR?.trim();
   if (override) return path.resolve(override);
   return DEFAULT_GIT_DIR;
 }
@@ -247,7 +247,7 @@ async function ensureGitCheckout(params: {
   if (!dirExists) {
     return await runUpdateStep({
       name: "git clone",
-      argv: ["git", "clone", CLAWDBOT_REPO_URL, params.dir],
+      argv: ["git", "clone", BOT_REPO_URL, params.dir],
       timeoutMs: params.timeoutMs,
       progress: params.progress,
     });
@@ -257,20 +257,20 @@ async function ensureGitCheckout(params: {
     const empty = await isEmptyDir(params.dir);
     if (!empty) {
       throw new Error(
-        `CLAWDBOT_GIT_DIR points at a non-git directory: ${params.dir}. Set CLAWDBOT_GIT_DIR to an empty folder or a clawdbot checkout.`,
+        `BOT_GIT_DIR points at a non-git directory: ${params.dir}. Set BOT_GIT_DIR to an empty folder or a bot checkout.`,
       );
     }
     return await runUpdateStep({
       name: "git clone",
-      argv: ["git", "clone", CLAWDBOT_REPO_URL, params.dir],
+      argv: ["git", "clone", BOT_REPO_URL, params.dir],
       cwd: params.dir,
       timeoutMs: params.timeoutMs,
       progress: params.progress,
     });
   }
 
-  if (!(await isClawdbotPackage(params.dir))) {
-    throw new Error(`CLAWDBOT_GIT_DIR does not look like a clawdbot checkout: ${params.dir}.`);
+  if (!(await isBotPackage(params.dir))) {
+    throw new Error(`BOT_GIT_DIR does not look like a bot checkout: ${params.dir}.`);
   }
 
   return null;
@@ -322,7 +322,7 @@ export async function updateStatusCommand(opts: UpdateStatusOptions): Promise<vo
   }
 
   const root =
-    (await resolveClawdbotPackageRoot({
+    (await resolveBotPackageRoot({
       moduleUrl: import.meta.url,
       argv1: process.argv[1],
       cwd: process.cwd(),
@@ -397,7 +397,7 @@ export async function updateStatusCommand(opts: UpdateStatusOptions): Promise<vo
     },
   ];
 
-  defaultRuntime.log(theme.heading("Clawdbot update status"));
+  defaultRuntime.log(theme.heading("Bot update status"));
   defaultRuntime.log("");
   defaultRuntime.log(
     renderTable({
@@ -562,7 +562,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
   }
 
   const root =
-    (await resolveClawdbotPackageRoot({
+    (await resolveBotPackageRoot({
       moduleUrl: import.meta.url,
       argv1: process.argv[1],
       cwd: process.cwd(),
@@ -671,7 +671,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
   const showProgress = !opts.json && process.stdout.isTTY;
 
   if (!opts.json) {
-    defaultRuntime.log(theme.heading("Updating Clawdbot..."));
+    defaultRuntime.log(theme.heading("Updating Bot..."));
     defaultRuntime.log("");
   }
 
@@ -694,7 +694,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
     const beforeVersion = pkgRoot ? await readPackageVersion(pkgRoot) : null;
     const updateStep = await runUpdateStep({
       name: "global update",
-      argv: globalInstallArgs(manager, `clawdbot@${tag}`),
+      argv: globalInstallArgs(manager, `bot@${tag}`),
       timeoutMs: timeoutMs ?? 20 * 60_000,
       progress,
     });
@@ -705,7 +705,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
       const entryPath = path.join(pkgRoot, "dist", "entry.js");
       if (await pathExists(entryPath)) {
         const doctorStep = await runUpdateStep({
-          name: "clawdbot doctor",
+          name: "bot doctor",
           argv: [resolveNodeRunner(), entryPath, "doctor", "--non-interactive"],
           timeoutMs: timeoutMs ?? 20 * 60_000,
           progress,
@@ -806,11 +806,11 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
     if (result.reason === "not-git-install") {
       defaultRuntime.log(
         theme.warn(
-          `Skipped: this Clawdbot install isn't a git checkout, and the package manager couldn't be detected. Update via your package manager, then run \`${formatCliCommand("clawdbot doctor")}\` and \`${formatCliCommand("clawdbot gateway restart")}\`.`,
+          `Skipped: this Bot install isn't a git checkout, and the package manager couldn't be detected. Update via your package manager, then run \`${formatCliCommand("bot doctor")}\` and \`${formatCliCommand("bot gateway restart")}\`.`,
         ),
       );
       defaultRuntime.log(
-        theme.muted("Examples: `npm i -g clawdbot@latest` or `pnpm add -g clawdbot@latest`"),
+        theme.muted("Examples: `npm i -g bot@latest` or `pnpm add -g bot@latest`"),
       );
     }
     defaultRuntime.exit(0);
@@ -910,7 +910,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
       if (!opts.json && restarted) {
         defaultRuntime.log(theme.success("Daemon restarted successfully."));
         defaultRuntime.log("");
-        process.env.CLAWDBOT_UPDATE_IN_PROGRESS = "1";
+        process.env.BOT_UPDATE_IN_PROGRESS = "1";
         try {
           const { doctorCommand } = await import("../commands/doctor.js");
           const interactiveDoctor = Boolean(process.stdin.isTTY) && !opts.json && opts.yes !== true;
@@ -918,7 +918,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
         } catch (err) {
           defaultRuntime.log(theme.warn(`Doctor failed: ${String(err)}`));
         } finally {
-          delete process.env.CLAWDBOT_UPDATE_IN_PROGRESS;
+          delete process.env.BOT_UPDATE_IN_PROGRESS;
         }
       }
     } catch (err) {
@@ -926,7 +926,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
         defaultRuntime.log(theme.warn(`Daemon restart failed: ${String(err)}`));
         defaultRuntime.log(
           theme.muted(
-            `You may need to restart the service manually: ${formatCliCommand("clawdbot gateway restart")}`,
+            `You may need to restart the service manually: ${formatCliCommand("bot gateway restart")}`,
           ),
         );
       }
@@ -936,13 +936,13 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
     if (result.mode === "npm" || result.mode === "pnpm") {
       defaultRuntime.log(
         theme.muted(
-          `Tip: Run \`${formatCliCommand("clawdbot doctor")}\`, then \`${formatCliCommand("clawdbot gateway restart")}\` to apply updates to a running gateway.`,
+          `Tip: Run \`${formatCliCommand("bot doctor")}\`, then \`${formatCliCommand("bot gateway restart")}\` to apply updates to a running gateway.`,
         ),
       );
     } else {
       defaultRuntime.log(
         theme.muted(
-          `Tip: Run \`${formatCliCommand("clawdbot gateway restart")}\` to apply updates to a running gateway.`,
+          `Tip: Run \`${formatCliCommand("bot gateway restart")}\` to apply updates to a running gateway.`,
         ),
       );
     }
@@ -956,7 +956,7 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
 export async function updateWizardCommand(opts: UpdateWizardOptions = {}): Promise<void> {
   if (!process.stdin.isTTY) {
     defaultRuntime.error(
-      "Update wizard requires a TTY. Use `clawdbot update --channel <stable|beta|dev>` instead.",
+      "Update wizard requires a TTY. Use `bot update --channel <stable|beta|dev>` instead.",
     );
     defaultRuntime.exit(1);
     return;
@@ -970,7 +970,7 @@ export async function updateWizardCommand(opts: UpdateWizardOptions = {}): Promi
   }
 
   const root =
-    (await resolveClawdbotPackageRoot({
+    (await resolveBotPackageRoot({
       moduleUrl: import.meta.url,
       argv1: process.argv[1],
       cwd: process.cwd(),
@@ -1047,7 +1047,7 @@ export async function updateWizardCommand(opts: UpdateWizardOptions = {}): Promi
         const empty = await isEmptyDir(gitDir);
         if (!empty) {
           defaultRuntime.error(
-            `CLAWDBOT_GIT_DIR points at a non-git directory: ${gitDir}. Set CLAWDBOT_GIT_DIR to an empty folder or a clawdbot checkout.`,
+            `BOT_GIT_DIR points at a non-git directory: ${gitDir}. Set BOT_GIT_DIR to an empty folder or a bot checkout.`,
           );
           defaultRuntime.exit(1);
           return;
@@ -1055,7 +1055,7 @@ export async function updateWizardCommand(opts: UpdateWizardOptions = {}): Promi
       }
       const ok = await confirm({
         message: stylePromptMessage(
-          `Create a git checkout at ${gitDir}? (override via CLAWDBOT_GIT_DIR)`,
+          `Create a git checkout at ${gitDir}? (override via BOT_GIT_DIR)`,
         ),
         initialValue: true,
       });
@@ -1092,7 +1092,7 @@ export async function updateWizardCommand(opts: UpdateWizardOptions = {}): Promi
 export function registerUpdateCli(program: Command) {
   const update = program
     .command("update")
-    .description("Update Clawdbot to the latest version")
+    .description("Update Bot to the latest version")
     .option("--json", "Output result as JSON", false)
     .option("--no-restart", "Skip restarting the gateway service after a successful update")
     .option("--channel <stable|beta|dev>", "Persist update channel (git + npm)")
@@ -1101,15 +1101,15 @@ export function registerUpdateCli(program: Command) {
     .option("--yes", "Skip confirmation prompts (non-interactive)", false)
     .addHelpText("after", () => {
       const examples = [
-        ["clawdbot update", "Update a source checkout (git)"],
-        ["clawdbot update --channel beta", "Switch to beta channel (git + npm)"],
-        ["clawdbot update --channel dev", "Switch to dev channel (git + npm)"],
-        ["clawdbot update --tag beta", "One-off update to a dist-tag or version"],
-        ["clawdbot update --no-restart", "Update without restarting the service"],
-        ["clawdbot update --json", "Output result as JSON"],
-        ["clawdbot update --yes", "Non-interactive (accept downgrade prompts)"],
-        ["clawdbot update wizard", "Interactive update wizard"],
-        ["clawdbot --update", "Shorthand for clawdbot update"],
+        ["bot update", "Update a source checkout (git)"],
+        ["bot update --channel beta", "Switch to beta channel (git + npm)"],
+        ["bot update --channel dev", "Switch to dev channel (git + npm)"],
+        ["bot update --tag beta", "One-off update to a dist-tag or version"],
+        ["bot update --no-restart", "Update without restarting the service"],
+        ["bot update --json", "Output result as JSON"],
+        ["bot update --yes", "Non-interactive (accept downgrade prompts)"],
+        ["bot update wizard", "Interactive update wizard"],
+        ["bot --update", "Shorthand for bot update"],
       ] as const;
       const fmtExamples = examples
         .map(([cmd, desc]) => `  ${theme.command(cmd)} ${theme.muted(`# ${desc}`)}`)
@@ -1121,7 +1121,7 @@ ${theme.heading("What this does:")}
 
 ${theme.heading("Switch channels:")}
   - Use --channel stable|beta|dev to persist the update channel in config
-  - Run clawdbot update status to see the active channel and source
+  - Run bot update status to see the active channel and source
   - Use --tag <dist-tag|version> for a one-off npm update without persisting
 
 ${theme.heading("Non-interactive:")}
@@ -1137,7 +1137,7 @@ ${theme.heading("Notes:")}
   - Downgrades require confirmation (can break configuration)
   - Skips update if the working directory has uncommitted changes
 
-${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.clawd.bot/cli/update")}`;
+${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.bot.hanzo.ai/cli/update")}`;
     })
     .action(async (opts) => {
       try {
@@ -1161,7 +1161,7 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.clawd.bot/cli/upda
     .option("--timeout <seconds>", "Timeout for each update step in seconds (default: 1200)")
     .addHelpText(
       "after",
-      `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.clawd.bot/cli/update")}\n`,
+      `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.bot.hanzo.ai/cli/update")}\n`,
     )
     .action(async (opts) => {
       try {
@@ -1181,14 +1181,14 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.clawd.bot/cli/upda
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["clawdbot update status", "Show channel + version status."],
-          ["clawdbot update status --json", "JSON output."],
-          ["clawdbot update status --timeout 10", "Custom timeout."],
+          ["bot update status", "Show channel + version status."],
+          ["bot update status --json", "JSON output."],
+          ["bot update status --timeout 10", "Custom timeout."],
         ])}\n\n${theme.heading("Notes:")}\n${theme.muted(
           "- Shows current update channel (stable/beta/dev) and source",
         )}\n${theme.muted("- Includes git tag/branch/SHA for source checkouts")}\n\n${theme.muted(
           "Docs:",
-        )} ${formatDocsLink("/cli/update", "docs.clawd.bot/cli/update")}`,
+        )} ${formatDocsLink("/cli/update", "docs.bot.hanzo.ai/cli/update")}`,
     )
     .action(async (opts) => {
       try {

@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-IMAGE_NAME="${CLAWDBOT_IMAGE:-clawdbot:local}"
-CONFIG_DIR="${CLAWDBOT_CONFIG_DIR:-$HOME/.clawdbot}"
-WORKSPACE_DIR="${CLAWDBOT_WORKSPACE_DIR:-$HOME/clawd}"
-PROFILE_FILE="${CLAWDBOT_PROFILE_FILE:-$HOME/.profile}"
+IMAGE_NAME="${BOT_IMAGE:-bot:local}"
+CONFIG_DIR="${BOT_CONFIG_DIR:-$HOME/.bot}"
+WORKSPACE_DIR="${BOT_WORKSPACE_DIR:-$HOME/bot}"
+PROFILE_FILE="${BOT_PROFILE_FILE:-$HOME/.profile}"
 
 PROFILE_MOUNT=()
 if [[ -f "$PROFILE_FILE" ]]; then
@@ -21,12 +21,12 @@ docker run --rm -t \
   -e COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   -e HOME=/home/node \
   -e NODE_OPTIONS=--disable-warning=ExperimentalWarning \
-  -e CLAWDBOT_LIVE_TEST=1 \
-  -e CLAWDBOT_LIVE_GATEWAY_MODELS="${CLAWDBOT_LIVE_GATEWAY_MODELS:-all}" \
-  -e CLAWDBOT_LIVE_GATEWAY_PROVIDERS="${CLAWDBOT_LIVE_GATEWAY_PROVIDERS:-}" \
-  -e CLAWDBOT_LIVE_GATEWAY_MODEL_TIMEOUT_MS="${CLAWDBOT_LIVE_GATEWAY_MODEL_TIMEOUT_MS:-}" \
-  -v "$CONFIG_DIR":/home/node/.clawdbot \
-  -v "$WORKSPACE_DIR":/home/node/clawd \
+  -e BOT_LIVE_TEST=1 \
+  -e BOT_LIVE_GATEWAY_MODELS="${BOT_LIVE_GATEWAY_MODELS:-all}" \
+  -e BOT_LIVE_GATEWAY_PROVIDERS="${BOT_LIVE_GATEWAY_PROVIDERS:-}" \
+  -e BOT_LIVE_GATEWAY_MODEL_TIMEOUT_MS="${BOT_LIVE_GATEWAY_MODEL_TIMEOUT_MS:-}" \
+  -v "$CONFIG_DIR":/home/node/.bot \
+  -v "$WORKSPACE_DIR":/home/node/bot \
   "${PROFILE_MOUNT[@]}" \
   "$IMAGE_NAME" \
   -lc "set -euo pipefail; [ -f \"$HOME/.profile\" ] && source \"$HOME/.profile\" || true; cd /app && pnpm test:live"

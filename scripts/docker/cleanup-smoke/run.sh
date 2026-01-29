@@ -3,30 +3,30 @@ set -euo pipefail
 
 cd /repo
 
-export CLAWDBOT_STATE_DIR="/tmp/clawdbot-test"
-export CLAWDBOT_CONFIG_PATH="${CLAWDBOT_STATE_DIR}/clawdbot.json"
+export BOT_STATE_DIR="/tmp/bot-test"
+export BOT_CONFIG_PATH="${BOT_STATE_DIR}/bot.json"
 
 echo "==> Seed state"
-mkdir -p "${CLAWDBOT_STATE_DIR}/credentials"
-mkdir -p "${CLAWDBOT_STATE_DIR}/agents/main/sessions"
-echo '{}' >"${CLAWDBOT_CONFIG_PATH}"
-echo 'creds' >"${CLAWDBOT_STATE_DIR}/credentials/marker.txt"
-echo 'session' >"${CLAWDBOT_STATE_DIR}/agents/main/sessions/sessions.json"
+mkdir -p "${BOT_STATE_DIR}/credentials"
+mkdir -p "${BOT_STATE_DIR}/agents/main/sessions"
+echo '{}' >"${BOT_CONFIG_PATH}"
+echo 'creds' >"${BOT_STATE_DIR}/credentials/marker.txt"
+echo 'session' >"${BOT_STATE_DIR}/agents/main/sessions/sessions.json"
 
 echo "==> Reset (config+creds+sessions)"
-pnpm clawdbot reset --scope config+creds+sessions --yes --non-interactive
+pnpm bot reset --scope config+creds+sessions --yes --non-interactive
 
-test ! -f "${CLAWDBOT_CONFIG_PATH}"
-test ! -d "${CLAWDBOT_STATE_DIR}/credentials"
-test ! -d "${CLAWDBOT_STATE_DIR}/agents/main/sessions"
+test ! -f "${BOT_CONFIG_PATH}"
+test ! -d "${BOT_STATE_DIR}/credentials"
+test ! -d "${BOT_STATE_DIR}/agents/main/sessions"
 
 echo "==> Recreate minimal config"
-mkdir -p "${CLAWDBOT_STATE_DIR}/credentials"
-echo '{}' >"${CLAWDBOT_CONFIG_PATH}"
+mkdir -p "${BOT_STATE_DIR}/credentials"
+echo '{}' >"${BOT_CONFIG_PATH}"
 
 echo "==> Uninstall (state only)"
-pnpm clawdbot uninstall --state --yes --non-interactive
+pnpm bot uninstall --state --yes --non-interactive
 
-test ! -d "${CLAWDBOT_STATE_DIR}"
+test ! -d "${BOT_STATE_DIR}"
 
 echo "OK"

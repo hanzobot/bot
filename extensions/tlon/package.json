@@ -1,9 +1,9 @@
 {
-  "name": "@clawdbot/tlon",
+  "name": "@bot/tlon",
   "version": "2026.1.25",
   "type": "module",
-  "description": "Clawdbot Tlon/Urbit channel plugin",
-  "clawdbot": {
+  "description": "Bot Tlon/Urbit channel plugin",
+  "bot": {
     "extensions": [
       "./index.ts"
     ],
@@ -18,7 +18,7 @@
       "quickstartAllowFrom": true
     },
     "install": {
-      "npmSpec": "@clawdbot/tlon",
+      "npmSpec": "@bot/tlon",
       "localPath": "extensions/tlon",
       "defaultChoice": "npm"
     }

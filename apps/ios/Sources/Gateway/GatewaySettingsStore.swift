@@ -1,9 +1,9 @@
 import Foundation
 
 enum GatewaySettingsStore {
-    private static let gatewayService = "com.clawdbot.gateway"
-    private static let legacyBridgeService = "com.clawdbot.bridge"
-    private static let nodeService = "com.clawdbot.node"
+    private static let gatewayService = "com.bot.gateway"
+    private static let legacyBridgeService = "com.bot.bridge"
+    private static let nodeService = "com.bot.node"
 
     private static let instanceIdDefaultsKey = "node.instanceId"
     private static let preferredGatewayStableIDDefaultsKey = "gateway.preferredStableID"
