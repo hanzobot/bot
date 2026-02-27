@@ -85,6 +85,17 @@ const XIAOMI_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
+const FIREWORKS_BASE_URL = "https://api.fireworks.ai/inference/v1";
+const FIREWORKS_DEFAULT_MODEL_ID = "accounts/fireworks/models/kimi-k2p5";
+const FIREWORKS_DEFAULT_CONTEXT_WINDOW = 131072;
+const FIREWORKS_DEFAULT_MAX_TOKENS = 65536;
+const FIREWORKS_DEFAULT_COST = {
+  input: 0.6,
+  output: 3,
+  cacheRead: 0.1,
+  cacheWrite: 0,
+};
+
 const MOONSHOT_BASE_URL = "https://api.moonshot.ai/v1";
 const MOONSHOT_DEFAULT_MODEL_ID = "kimi-k2.5";
 const MOONSHOT_DEFAULT_CONTEXT_WINDOW = 256000;
@@ -461,6 +472,24 @@ function buildMinimaxPortalProvider(): ProviderConfig {
         name: "MiniMax M2.5",
         reasoning: true,
       }),
+    ],
+  };
+}
+
+function buildFireworksProvider(): ProviderConfig {
+  return {
+    baseUrl: FIREWORKS_BASE_URL,
+    api: "openai-completions",
+    models: [
+      {
+        id: FIREWORKS_DEFAULT_MODEL_ID,
+        name: "Kimi K2.5",
+        reasoning: true,
+        input: ["text", "image"],
+        cost: FIREWORKS_DEFAULT_COST,
+        contextWindow: FIREWORKS_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: FIREWORKS_DEFAULT_MAX_TOKENS,
+      },
     ],
   };
 }
@@ -859,6 +888,13 @@ export async function resolveImplicitProviders(params: {
       ...buildMinimaxPortalProvider(),
       apiKey: MINIMAX_OAUTH_PLACEHOLDER,
     };
+  }
+
+  const fireworksKey =
+    resolveEnvApiKeyVarName("fireworks") ??
+    resolveApiKeyFromProfiles({ provider: "fireworks", store: authStore });
+  if (fireworksKey) {
+    providers.fireworks = { ...buildFireworksProvider(), apiKey: fireworksKey };
   }
 
   const moonshotKey =

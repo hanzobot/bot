@@ -1,6 +1,6 @@
 // Defaults for agent metadata when upstream does not supply them.
-// Model id uses pi-ai's built-in Anthropic catalog.
-export const DEFAULT_PROVIDER = "anthropic";
-export const DEFAULT_MODEL = "claude-opus-4-6";
+// Kimi K2.5 via Fireworks — best cost/performance ratio for agentic coding.
+export const DEFAULT_PROVIDER = "fireworks";
+export const DEFAULT_MODEL = "accounts/fireworks/models/kimi-k2p5";
 // Conservative fallback used when model metadata is unavailable.
-export const DEFAULT_CONTEXT_TOKENS = 200_000;
+export const DEFAULT_CONTEXT_TOKENS = 131_072;

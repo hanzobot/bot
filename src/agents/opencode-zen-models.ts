@@ -17,7 +17,7 @@ import { createSubsystemLogger } from "../logging/subsystem.js";
 const log = createSubsystemLogger("opencode-zen-models");
 
 export const OPENCODE_ZEN_API_BASE_URL = "https://opencode.ai/zen/v1";
-export const OPENCODE_ZEN_DEFAULT_MODEL = "claude-opus-4-6";
+export const OPENCODE_ZEN_DEFAULT_MODEL = "kimi-k2p5";
 export const OPENCODE_ZEN_DEFAULT_MODEL_REF = `opencode/${OPENCODE_ZEN_DEFAULT_MODEL}`;
 
 // Cache for fetched models (1 hour TTL)
@@ -30,17 +30,21 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
  * Users can use "opus" instead of "claude-opus-4-6", etc.
  */
 export const OPENCODE_ZEN_MODEL_ALIASES: Record<string, string> = {
-  // Claude
+  // Kimi K2.5 — default model
+  kimi: "kimi-k2p5",
+  "kimi-k2.5": "kimi-k2p5",
+
+  // Claude (still available, no longer default)
   opus: "claude-opus-4-6",
   "opus-4.6": "claude-opus-4-6",
   "opus-4.5": "claude-opus-4-5",
   "opus-4": "claude-opus-4-6",
 
   // Legacy Claude aliases (OpenCode Zen rotates model catalogs; keep old keys working).
-  sonnet: "claude-opus-4-6",
-  "sonnet-4": "claude-opus-4-6",
-  haiku: "claude-opus-4-6",
-  "haiku-3.5": "claude-opus-4-6",
+  sonnet: "kimi-k2p5",
+  "sonnet-4": "kimi-k2p5",
+  haiku: "kimi-k2p5",
+  "haiku-3.5": "kimi-k2p5",
 
   // GPT-5.x family
   gpt5: "gpt-5.2",
@@ -102,6 +106,7 @@ export function resolveOpencodeZenModelApi(modelId: string): ModelApi {
   if (lower.startsWith("gemini-")) {
     return "google-generative-ai";
   }
+  // Kimi K2.5 and other OpenAI-compatible models
   return "openai-completions";
 }
 
@@ -120,6 +125,7 @@ const MODEL_COSTS: Record<
   string,
   { input: number; output: number; cacheRead: number; cacheWrite: number }
 > = {
+  "kimi-k2p5": { input: 0.6, output: 3, cacheRead: 0.1, cacheWrite: 0 },
   "gpt-5.1-codex": {
     input: 1.07,
     output: 8.5,
@@ -150,6 +156,7 @@ const MODEL_COSTS: Record<
 const DEFAULT_COST = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
 
 const MODEL_CONTEXT_WINDOWS: Record<string, number> = {
+  "kimi-k2p5": 131072,
   "gpt-5.1-codex": 400000,
   "claude-opus-4-6": 1000000,
   "claude-opus-4-5": 200000,
@@ -167,6 +174,7 @@ function getDefaultContextWindow(modelId: string): number {
 }
 
 const MODEL_MAX_TOKENS: Record<string, number> = {
+  "kimi-k2p5": 65536,
   "gpt-5.1-codex": 128000,
   "claude-opus-4-6": 128000,
   "claude-opus-4-5": 64000,
@@ -204,6 +212,7 @@ function buildModelDefinition(modelId: string): ModelDefinitionConfig {
  * Format a model ID into a human-readable name.
  */
 const MODEL_NAMES: Record<string, string> = {
+  "kimi-k2p5": "Kimi K2.5",
   "gpt-5.1-codex": "GPT-5.1 Codex",
   "claude-opus-4-6": "Claude Opus 4.6",
   "claude-opus-4-5": "Claude Opus 4.5",
@@ -232,6 +241,7 @@ function formatModelName(modelId: string): string {
  */
 export function getOpencodeZenStaticFallbackModels(): ModelDefinitionConfig[] {
   const modelIds = [
+    "kimi-k2p5",
     "gpt-5.1-codex",
     "claude-opus-4-6",
     "claude-opus-4-5",

@@ -24,8 +24,9 @@ import {
 } from "./image-tool.helpers.js";
 
 const DEFAULT_PROMPT = "Describe the image.";
-const ANTHROPIC_IMAGE_PRIMARY = "anthropic/claude-opus-4-6";
-const ANTHROPIC_IMAGE_FALLBACK = "anthropic/claude-opus-4-5";
+// Vision tasks still use Claude — best multimodal image understanding.
+const ANTHROPIC_IMAGE_PRIMARY = "anthropic/claude-sonnet-4-5";
+const ANTHROPIC_IMAGE_FALLBACK = "anthropic/claude-haiku-4-5";
 const DEFAULT_MAX_IMAGES = 20;
 
 export const __testing = {

@@ -20,7 +20,10 @@ const DEFAULT_MODEL_ALIASES: Readonly<Record<string, string>> = {
   "zen-coder": "hanzo/zen4-coder",
   "zen-thinking": "hanzo/zen4-thinking",
 
-  // Anthropic (pi-ai catalog uses "latest" ids without date suffix)
+  // Fireworks — default provider (Kimi K2.5)
+  kimi: "fireworks/accounts/fireworks/models/kimi-k2p5",
+
+  // Anthropic
   opus: "anthropic/claude-opus-4-6",
   sonnet: "anthropic/claude-sonnet-4-5",
 
