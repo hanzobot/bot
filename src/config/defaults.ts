@@ -26,7 +26,7 @@ const DEFAULT_MODEL_ALIASES: Readonly<Record<string, string>> = {
   "sonnet-4.6": "hanzo/claude-sonnet-4-6",
 
   // OpenAI
-  gpt: "openai/gpt-5.2",
+  gpt: "openai/gpt-5.3",
   "gpt-mini": "openai/gpt-5-mini",
 
   // Google Gemini (3.x are preview ids in the catalog)

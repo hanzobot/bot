@@ -47,8 +47,9 @@ export const OPENCODE_ZEN_MODEL_ALIASES: Record<string, string> = {
   "haiku-3.5": "kimi-k2p5",
 
   // GPT-5.x family
-  gpt5: "gpt-5.2",
-  "gpt-5": "gpt-5.2",
+  gpt5: "gpt-5.3",
+  "gpt-5": "gpt-5.3",
+  "gpt-5.2": "gpt-5.3",
   "gpt-5.1": "gpt-5.1",
 
   // Legacy GPT aliases (keep old config/docs stable; map to closest current equivalents).
@@ -57,8 +58,8 @@ export const OPENCODE_ZEN_MODEL_ALIASES: Record<string, string> = {
   "gpt-mini": "gpt-5.1-codex-mini",
 
   // Legacy O-series aliases (no longer in the Zen catalog; map to a strong default).
-  o1: "gpt-5.2",
-  o3: "gpt-5.2",
+  o1: "gpt-5.3",
+  o3: "gpt-5.3",
   "o3-mini": "gpt-5.1-codex-mini",
 
   // Codex family
@@ -150,6 +151,7 @@ const MODEL_COSTS: Record<
     cacheRead: 0.125,
     cacheWrite: 0,
   },
+  "gpt-5.3": { input: 2.0, output: 16, cacheRead: 0.2, cacheWrite: 0 },
   "gpt-5.2": { input: 1.75, output: 14, cacheRead: 0.175, cacheWrite: 0 },
 };
 
@@ -166,6 +168,7 @@ const MODEL_CONTEXT_WINDOWS: Record<string, number> = {
   "glm-4.7": 204800,
   "gemini-3-flash": 1048576,
   "gpt-5.1-codex-max": 400000,
+  "gpt-5.3": 400000,
   "gpt-5.2": 400000,
 };
 
@@ -184,6 +187,7 @@ const MODEL_MAX_TOKENS: Record<string, number> = {
   "glm-4.7": 131072,
   "gemini-3-flash": 65536,
   "gpt-5.1-codex-max": 128000,
+  "gpt-5.3": 128000,
   "gpt-5.2": 128000,
 };
 
@@ -222,6 +226,7 @@ const MODEL_NAMES: Record<string, string> = {
   "glm-4.7": "GLM-4.7",
   "gemini-3-flash": "Gemini 3 Flash",
   "gpt-5.1-codex-max": "GPT-5.1 Codex Max",
+  "gpt-5.3": "GPT-5.3",
   "gpt-5.2": "GPT-5.2",
 };
 
@@ -251,7 +256,7 @@ export function getOpencodeZenStaticFallbackModels(): ModelDefinitionConfig[] {
     "glm-4.7",
     "gemini-3-flash",
     "gpt-5.1-codex-max",
-    "gpt-5.2",
+    "gpt-5.3",
   ];
 
   return modelIds.map(buildModelDefinition);

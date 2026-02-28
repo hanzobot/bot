@@ -25,7 +25,7 @@ import {
 
 const DEFAULT_PROMPT = "Describe the image.";
 // Vision tasks still use Claude — best multimodal image understanding.
-const ANTHROPIC_IMAGE_PRIMARY = "anthropic/claude-sonnet-4-5";
+const ANTHROPIC_IMAGE_PRIMARY = "anthropic/claude-sonnet-4-6";
 const ANTHROPIC_IMAGE_FALLBACK = "anthropic/claude-haiku-4-5";
 const DEFAULT_MAX_IMAGES = 20;
 

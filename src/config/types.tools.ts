@@ -257,7 +257,7 @@ export type ExecToolConfig = {
     workspaceOnly?: boolean;
     /**
      * Optional allowlist of model ids that can use apply_patch.
-     * Accepts either raw ids (e.g. "gpt-5.2") or full ids (e.g. "openai/gpt-5.2").
+     * Accepts either raw ids (e.g. "gpt-5.3") or full ids (e.g. "openai/gpt-5.3").
      */
     allowModels?: string[];
   };
@@ -462,7 +462,7 @@ export type ToolsConfig = {
       gemini?: {
         /** Gemini API key (defaults to GEMINI_API_KEY env var). */
         apiKey?: string;
-        /** Model to use for grounded search (defaults to "gemini-2.5-flash"). */
+        /** Model to use for grounded search (defaults to "gemini-3-flash"). */
         model?: string;
       };
       /** Kimi-specific configuration (used when provider="kimi"). */
