@@ -18,6 +18,7 @@ function sanitizeAndNormalizeEmbedding(vec: number[]): number[] {
 }
 
 export type { GeminiEmbeddingClient } from "./embeddings-gemini.js";
+export type { MistralEmbeddingClient } from "./embeddings-mistral.js";
 export type { OpenAiEmbeddingClient } from "./embeddings-openai.js";
 export type { VoyageEmbeddingClient } from "./embeddings-voyage.js";
 
@@ -29,11 +30,11 @@ export type EmbeddingProvider = {
   embedBatch: (texts: string[]) => Promise<number[][]>;
 };
 
-export type EmbeddingProviderId = "openai" | "local" | "gemini" | "voyage";
+export type EmbeddingProviderId = "openai" | "local" | "gemini" | "voyage" | "mistral";
 export type EmbeddingProviderRequest = EmbeddingProviderId | "auto";
 export type EmbeddingProviderFallback = EmbeddingProviderId | "none";
 
-const REMOTE_EMBEDDING_PROVIDER_IDS = ["openai", "gemini", "voyage"] as const;
+const REMOTE_EMBEDDING_PROVIDER_IDS = ["openai", "gemini", "voyage", "mistral"] as const;
 
 export type EmbeddingProviderResult = {
   provider: EmbeddingProvider;
@@ -43,6 +44,7 @@ export type EmbeddingProviderResult = {
   openAi?: OpenAiEmbeddingClient;
   gemini?: GeminiEmbeddingClient;
   voyage?: VoyageEmbeddingClient;
+  mistral?: import("./embeddings-mistral.js").MistralEmbeddingClient;
 };
 
 export type EmbeddingProviderOptions = {

@@ -6,7 +6,8 @@ export type DeviceAuthPayloadParams = {
   scopes: string[];
   signedAtMs: number;
   token?: string | null;
-  nonce: string;
+  nonce?: string;
+  version?: string;
 };
 
 export type DeviceAuthPayloadV3Params = DeviceAuthPayloadParams & {
@@ -34,8 +35,9 @@ export function normalizeDeviceMetadataForAuth(value?: string | null): string {
 export function buildDeviceAuthPayload(params: DeviceAuthPayloadParams): string {
   const scopes = params.scopes.join(",");
   const token = params.token ?? "";
-  return [
-    "v2",
+  const version = params.version ?? "v2";
+  const parts = [
+    version,
     params.deviceId,
     params.clientId,
     params.clientMode,
@@ -43,8 +45,11 @@ export function buildDeviceAuthPayload(params: DeviceAuthPayloadParams): string 
     scopes,
     String(params.signedAtMs),
     token,
-    params.nonce,
-  ].join("|");
+  ];
+  if (params.nonce !== undefined) {
+    parts.push(params.nonce);
+  }
+  return parts.join("|");
 }
 
 export function buildDeviceAuthPayloadV3(params: DeviceAuthPayloadV3Params): string {

@@ -52,7 +52,7 @@ const bootstrapExtraFilesHook: HookHandler = async (event) => {
     if (diagnostics.length > 0) {
       log.debug("skipped extra bootstrap candidates", {
         skipped: diagnostics.length,
-        reasons: diagnostics.reduce<Record<string, number>>((counts, item) => {
+        reasons: diagnostics.reduce<Record<string, number>>((counts, item: { reason: string }) => {
           counts[item.reason] = (counts[item.reason] ?? 0) + 1;
           return counts;
         }, {}),

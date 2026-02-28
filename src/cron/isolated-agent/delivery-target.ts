@@ -2,6 +2,25 @@ import type { ChannelId } from "../../channels/plugins/types.js";
 import type { BotConfig } from "../../config/config.js";
 import type { OutboundChannel } from "../../infra/outbound/targets.js";
 import { DEFAULT_CHAT_CHANNEL } from "../../channels/registry.js";
+
+export type DeliveryTargetResolution =
+  | {
+      ok: true;
+      channel: Exclude<OutboundChannel, "none">;
+      to?: string;
+      accountId?: string;
+      threadId?: string | number;
+      mode: "explicit" | "implicit";
+    }
+  | {
+      ok: false;
+      error: Error;
+      channel?: Exclude<OutboundChannel, "none">;
+      to?: string;
+      accountId?: string;
+      threadId?: string | number;
+      mode?: "explicit" | "implicit";
+    };
 import {
   loadSessionStore,
   resolveAgentMainSessionKey,

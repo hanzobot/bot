@@ -59,6 +59,7 @@ import {
   buildZaiModelDefinition,
   buildMoonshotModelDefinition,
   buildXaiModelDefinition,
+  MISTRAL_DEFAULT_MODEL_REF,
   QIANFAN_BASE_URL,
   QIANFAN_DEFAULT_MODEL_REF,
   KIMI_CODING_MODEL_REF,
@@ -71,6 +72,7 @@ import {
   XAI_BASE_URL,
   XAI_DEFAULT_MODEL_ID,
 } from "./onboard-auth.models.js";
+export { KILOCODE_BASE_URL, KILOCODE_DEFAULT_MODEL_REF } from "../providers/kilocode-shared.js";
 
 export function applyZaiProviderConfig(
   cfg: BotConfig,
@@ -480,4 +482,20 @@ export function applyQianfanProviderConfig(cfg: BotConfig): BotConfig {
 export function applyQianfanConfig(cfg: BotConfig): BotConfig {
   const next = applyQianfanProviderConfig(cfg);
   return applyAgentDefaultModelPrimary(next, QIANFAN_DEFAULT_MODEL_REF);
+}
+
+export function applyMistralProviderConfig(cfg: BotConfig): BotConfig {
+  return applyAgentDefaultModelPrimary(cfg, MISTRAL_DEFAULT_MODEL_REF);
+}
+
+export function applyMistralConfig(cfg: BotConfig): BotConfig {
+  return applyAgentDefaultModelPrimary(cfg, MISTRAL_DEFAULT_MODEL_REF);
+}
+
+export function applyKilocodeProviderConfig(cfg: BotConfig): BotConfig {
+  return cfg;
+}
+
+export function applyKilocodeConfig(cfg: BotConfig): BotConfig {
+  return cfg;
 }

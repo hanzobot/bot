@@ -73,6 +73,10 @@ export type IMessageAccountConfig = {
   heartbeat?: ChannelHeartbeatVisibilityConfig;
   /** Outbound response prefix override for this channel/account. */
   responsePrefix?: string;
+  /** Root paths to search for local attachments (e.g. ~/Library/Messages/Attachments). */
+  attachmentRoots?: string[];
+  /** Root paths to search for remote attachments copied via scp. */
+  remoteAttachmentRoots?: string[];
 };
 
 export type IMessageConfig = {

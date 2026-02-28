@@ -376,3 +376,9 @@ export function isSecureWebSocketUrl(url: string): boolean {
   // ws:// is only secure for loopback addresses
   return isLoopbackHost(parsed.hostname);
 }
+
+/** Alias for resolveClientIp for backward compatibility. */
+export const resolveGatewayClientIp = resolveClientIp;
+
+/** Parse forwarded-for client IP (alias for resolveClientIp). */
+export const parseForwardedForClientIp = resolveClientIp;

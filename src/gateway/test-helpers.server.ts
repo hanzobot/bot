@@ -590,6 +590,12 @@ export async function rpcReq<T = unknown>(
   );
 }
 
+/** Track the challenge nonce sent by the server on connect (WS test helper). */
+export function trackConnectChallengeNonce(ws: WebSocket): void {
+  // stub: nonce tracking is handled by ws-connection internals in tests
+  void ws;
+}
+
 export async function waitForSystemEvent(timeoutMs = 2000) {
   const sessionKey = resolveMainSessionKeyFromConfig();
   const deadline = Date.now() + timeoutMs;

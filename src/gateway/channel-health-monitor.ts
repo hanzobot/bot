@@ -1,6 +1,6 @@
 import type { ChannelId } from "../channels/plugins/types.js";
-import { createSubsystemLogger } from "../logging/subsystem.js";
 import type { ChannelManager } from "./server-channels.js";
+import { createSubsystemLogger } from "../logging/subsystem.js";
 
 const log = createSubsystemLogger("gateway/health-monitor");
 
@@ -98,7 +98,7 @@ export function startChannelHealthMonitor(deps: ChannelHealthMonitorDeps): Chann
           if (!isManagedAccount(status)) {
             continue;
           }
-          if (channelManager.isManuallyStopped(channelId as ChannelId, accountId)) {
+          if (channelManager.isManuallyStopped?.(channelId as ChannelId, accountId)) {
             continue;
           }
           if (isChannelHealthy(status)) {
@@ -135,7 +135,7 @@ export function startChannelHealthMonitor(deps: ChannelHealthMonitorDeps): Chann
             if (status.running) {
               await channelManager.stopChannel(channelId as ChannelId, accountId);
             }
-            channelManager.resetRestartAttempts(channelId as ChannelId, accountId);
+            channelManager.resetRestartAttempts?.(channelId as ChannelId, accountId);
             await channelManager.startChannel(channelId as ChannelId, accountId);
             record.lastRestartAt = now;
             record.restartsThisHour.push({ at: now });

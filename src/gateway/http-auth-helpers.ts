@@ -13,6 +13,7 @@ export async function authorizeGatewayBearerRequestOrReply(params: {
   res: ServerResponse;
   auth: ResolvedGatewayAuth;
   trustedProxies?: string[];
+  allowRealIpFallback?: boolean;
   rateLimiter?: AuthRateLimiter;
 }): Promise<boolean> {
   const result = await authorizeGatewayBearerRequest(params);
@@ -29,6 +30,7 @@ export async function authorizeGatewayBearerRequest(params: {
   res: ServerResponse;
   auth: ResolvedGatewayAuth;
   trustedProxies?: string[];
+  allowRealIpFallback?: boolean;
   rateLimiter?: AuthRateLimiter;
 }): Promise<GatewayAuthResult | null> {
   const token = getBearerToken(params.req);

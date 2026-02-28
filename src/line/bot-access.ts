@@ -37,6 +37,9 @@ export const normalizeDmAllowFromWithStore = (params: {
   dmPolicy?: string;
 }): NormalizedAllowFrom => normalizeAllowFrom(mergeDmAllowFromSources(params));
 
+/** Alias for normalizeDmAllowFromWithStore for call sites that use the longer name. */
+export const normalizeAllowFromWithStore = normalizeDmAllowFromWithStore;
+
 export const isSenderAllowed = (params: {
   allow: NormalizedAllowFrom;
   senderId?: string;

@@ -440,6 +440,51 @@ export function resolveThinkingDefault(params: {
 }
 
 /**
+ * Alias for normalizeProviderId — finds the key in a record that matches a
+ * normalized provider key.
+ */
+export function findNormalizedProviderKey(
+  record: Record<string, unknown>,
+  providerKey: string,
+): string | null {
+  const normalized = normalizeProviderId(providerKey);
+  for (const key of Object.keys(record)) {
+    if (normalizeProviderId(key) === normalized) {
+      return key;
+    }
+  }
+  return null;
+}
+
+/**
+ * Resolve the model to use for a subagent spawn, respecting the agent's
+ * configured default model and any per-spawn override.
+ */
+export function resolveSubagentSpawnModelSelection(params: {
+  cfg: BotConfig;
+  agentId: string;
+  modelOverride?: string;
+}): string {
+  if (params.modelOverride?.trim()) {
+    return params.modelOverride.trim();
+  }
+  // Check agent-specific model default via resolveAgentModelPrimary
+  const agentModel = resolveAgentModelPrimary(params.cfg, params.agentId)?.trim() ?? "";
+  if (agentModel) {
+    return agentModel;
+  }
+  // Fall back to global default
+  const globalModelRaw = params.cfg.agents?.defaults?.model;
+  const globalModel =
+    typeof globalModelRaw === "string"
+      ? globalModelRaw.trim()
+      : typeof globalModelRaw === "object" && globalModelRaw !== null
+        ? (globalModelRaw.primary?.trim() ?? "")
+        : "";
+  return globalModel || `${DEFAULT_PROVIDER}/${DEFAULT_MODEL}`;
+}
+
+/**
  * Resolve the model configured for Gmail hook processing.
  * Returns null if hooks.gmail.model is not set.
  */

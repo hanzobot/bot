@@ -32,6 +32,7 @@ export type ResolvedBrowserConfig = {
   defaultProfile: string;
   profiles: Record<string, BrowserProfileConfig>;
   extraArgs: string[];
+  ssrfPolicy?: import("../infra/net/ssrf.js").SsrFPolicy;
 };
 
 export type ResolvedBrowserProfile = {

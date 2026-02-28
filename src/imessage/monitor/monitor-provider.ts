@@ -356,7 +356,8 @@ export async function monitorIMessageProvider(opts: MonitorIMessageOpts = {}): P
           runtime,
           maxBytes: mediaMaxBytes,
           textLimit,
-          sentMessageCache,
+          sentMessageCache:
+            sentMessageCache as unknown as import("./echo-cache.js").SentMessageCache,
         });
       },
       onError: (err, info) => {

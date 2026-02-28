@@ -5,6 +5,8 @@ export type ApiKeyCredential = {
   type: "api_key";
   provider: string;
   key?: string;
+  /** Secret reference for the API key (e.g. from a secret manager). */
+  keyRef?: string;
   email?: string;
   /** Optional provider-specific metadata (e.g., account IDs, gateway IDs). */
   metadata?: Record<string, string>;
@@ -18,6 +20,8 @@ export type TokenCredential = {
   type: "token";
   provider: string;
   token: string;
+  /** Secret reference for the token (e.g. from a secret manager). */
+  tokenRef?: string;
   /** Optional expiry timestamp (ms since epoch). */
   expires?: number;
   email?: string;
@@ -34,10 +38,12 @@ export type AuthProfileCredential = ApiKeyCredential | TokenCredential | OAuthCr
 
 export type AuthProfileFailureReason =
   | "auth"
+  | "auth_permanent"
   | "format"
   | "rate_limit"
   | "billing"
   | "timeout"
+  | "model_not_found"
   | "unknown";
 
 /** Per-profile usage statistics for round-robin and cooldown tracking */

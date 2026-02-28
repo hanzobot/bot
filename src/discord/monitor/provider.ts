@@ -26,6 +26,7 @@ import {
   resolveNativeSkillsEnabled,
 } from "../../config/commands.js";
 import { loadConfig } from "../../config/config.js";
+import { isDangerousNameMatchingEnabled } from "../../config/dangerous-name-matching.js";
 import { danger, logVerbose, shouldLogVerbose, warn } from "../../globals.js";
 import { formatErrorMessage } from "../../infra/errors.js";
 import { createDiscordRetryRunner } from "../../infra/retry-policy.js";
@@ -550,27 +551,25 @@ export async function monitorDiscordProvider(opts: MonitorDiscordOpts = {}) {
   });
 
   registerDiscordListener(client.listeners, new DiscordMessageListener(messageHandler, logger));
+  const reactionListenerParams = {
+    cfg,
+    accountId: account.accountId,
+    runtime,
+    botUserId,
+    guildEntries,
+    logger,
+    dmEnabled,
+    groupDmEnabled,
+    groupDmChannels: groupDmChannels ?? [],
+    dmPolicy: dmPolicy as "open" | "pairing" | "allowlist" | "disabled",
+    allowFrom: allowFrom ?? [],
+    groupPolicy: groupPolicy as "open" | "allowlist" | "disabled",
+    allowNameMatching: isDangerousNameMatchingEnabled(discordCfg),
+  };
+  registerDiscordListener(client.listeners, new DiscordReactionListener(reactionListenerParams));
   registerDiscordListener(
     client.listeners,
-    new DiscordReactionListener({
-      cfg,
-      accountId: account.accountId,
-      runtime,
-      botUserId,
-      guildEntries,
-      logger,
-    }),
-  );
-  registerDiscordListener(
-    client.listeners,
-    new DiscordReactionRemoveListener({
-      cfg,
-      accountId: account.accountId,
-      runtime,
-      botUserId,
-      guildEntries,
-      logger,
-    }),
+    new DiscordReactionRemoveListener(reactionListenerParams),
   );
 
   if (discordCfg.intents?.presence) {

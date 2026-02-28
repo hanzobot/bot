@@ -118,7 +118,7 @@ function formatApprovalCommand(command: string): { inline: boolean; text: string
 
 function buildRequestMessage(request: ExecApprovalRequest, nowMs: number) {
   const lines: string[] = ["🔒 Exec approval required", `ID: ${request.id}`];
-  const command = formatApprovalCommand(request.request.command);
+  const command = formatApprovalCommand(request.request.command ?? "");
   if (command.inline) {
     lines.push(`Command: ${command.text}`);
   } else {

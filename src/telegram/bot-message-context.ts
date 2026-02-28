@@ -106,6 +106,8 @@ export type BuildTelegramMessageContextParams = {
   resolveGroupActivation: ResolveGroupActivation;
   resolveGroupRequireMention: ResolveGroupRequireMention;
   resolveTelegramGroupConfig: ResolveTelegramGroupConfig;
+  /** Optional handler for sending chat action (e.g. typing indicator). */
+  sendChatActionHandler?: (ctx: TelegramContext, action: string) => Promise<void>;
 };
 
 async function resolveStickerVisionSupport(params: {
@@ -146,6 +148,7 @@ export const buildTelegramMessageContext = async ({
   resolveGroupActivation,
   resolveGroupRequireMention,
   resolveTelegramGroupConfig,
+  sendChatActionHandler: _sendChatActionHandler,
 }: BuildTelegramMessageContextParams) => {
   const msg = primaryCtx.message;
   recordChannelActivity({

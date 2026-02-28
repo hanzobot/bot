@@ -109,3 +109,20 @@ export function lookupContextTokens(modelId?: string): number | undefined {
   void loadPromise;
   return MODEL_CACHE.get(modelId);
 }
+
+export function resolveContextTokensForModel(params: {
+  cfg?: unknown;
+  provider?: string;
+  model?: string;
+  contextTokensOverride?: number;
+  fallbackContextTokens?: number;
+}): number | undefined {
+  if (typeof params.contextTokensOverride === "number" && params.contextTokensOverride > 0) {
+    return params.contextTokensOverride;
+  }
+  const looked = lookupContextTokens(params.model);
+  if (looked) {
+    return looked;
+  }
+  return params.fallbackContextTokens;
+}

@@ -41,6 +41,58 @@ import {
   sendDiscordVoiceMessage,
 } from "./voice-message.js";
 
+export type WebhookMessageOpts = {
+  webhookId: string;
+  webhookToken: string;
+  accountId?: string;
+  threadId?: string | number;
+  replyTo?: string;
+  username?: string;
+  avatarUrl?: string;
+};
+
+/**
+ * Send a message via a Discord webhook.
+ * Used for thread-binding persona sends where the bot impersonates an agent identity.
+ */
+export async function sendWebhookMessageDiscord(
+  text: string,
+  opts: WebhookMessageOpts,
+): Promise<DiscordSendResult> {
+  const cfg = loadConfig();
+  const client = createDiscordClient({ accountId: opts.accountId }, cfg);
+  const threadId = opts.threadId != null ? String(opts.threadId) : undefined;
+  const route = `https://discord.com/api/v10/webhooks/${opts.webhookId}/${opts.webhookToken}${threadId ? `?thread_id=${threadId}` : ""}`;
+  try {
+    const body: Record<string, unknown> = { content: text };
+    if (opts.username) {
+      body.username = opts.username;
+    }
+    if (opts.avatarUrl) {
+      body.avatar_url = opts.avatarUrl;
+    }
+    if (opts.replyTo) {
+      body.message_reference = { message_id: opts.replyTo };
+    }
+    const resp = await fetch(route, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) {
+      throw new Error(`Discord webhook send failed: ${resp.status} ${resp.statusText}`);
+    }
+    const data = (await resp.json()) as { id?: string; channel_id?: string };
+    return {
+      messageId: data.id ?? "",
+      channelId: data.channel_id ?? opts.webhookId,
+    };
+  } catch (err) {
+    void client;
+    throw err;
+  }
+}
+
 type DiscordSendOpts = {
   token?: string;
   accountId?: string;

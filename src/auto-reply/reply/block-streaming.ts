@@ -101,6 +101,36 @@ export function resolveBlockStreamingChunking(
   };
 }
 
+/**
+ * Resolve effective block streaming config (chunking + coalescing combined).
+ * Convenience wrapper over resolveBlockStreamingChunking + resolveBlockStreamingCoalescing.
+ */
+export function resolveEffectiveBlockStreamingConfig(params: {
+  cfg: BotConfig | undefined;
+  provider?: string;
+  accountId?: string | null;
+  maxChunkChars?: number;
+  coalesceIdleMs?: number;
+  chunking?: {
+    minChars: number;
+    maxChars: number;
+    breakPreference: "paragraph" | "newline" | "sentence";
+  };
+}): {
+  chunking: ReturnType<typeof resolveBlockStreamingChunking>;
+  coalescing: ReturnType<typeof resolveBlockStreamingCoalescing>;
+} {
+  const chunking =
+    params.chunking ?? resolveBlockStreamingChunking(params.cfg, params.provider, params.accountId);
+  const coalescing = resolveBlockStreamingCoalescing(
+    params.cfg,
+    params.provider,
+    params.accountId,
+    chunking,
+  );
+  return { chunking, coalescing };
+}
+
 export function resolveBlockStreamingCoalescing(
   cfg: BotConfig | undefined,
   provider?: string,

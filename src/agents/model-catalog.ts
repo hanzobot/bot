@@ -101,7 +101,10 @@ export async function loadModelCatalog(params?: {
       const piSdk = await importPiSdk();
       const agentDir = resolveBotAgentDir();
       const { join } = await import("node:path");
-      const authStorage = new piSdk.AuthStorage(join(agentDir, "auth.json"));
+      const AuthStorageCtor = piSdk.AuthStorage as unknown as new (
+        path: string,
+      ) => import("@mariozechner/pi-coding-agent").AuthStorage;
+      const authStorage = new AuthStorageCtor(join(agentDir, "auth.json"));
       const registry = new piSdk.ModelRegistry(authStorage, join(agentDir, "models.json")) as
         | {
             getAll: () => Array<DiscoveredModel>;

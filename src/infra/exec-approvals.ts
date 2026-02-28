@@ -13,16 +13,7 @@ export type ExecAsk = "off" | "on-miss" | "always";
 
 export type ExecApprovalRequest = {
   id: string;
-  request: {
-    command: string;
-    cwd?: string | null;
-    host?: string | null;
-    security?: string | null;
-    ask?: string | null;
-    agentId?: string | null;
-    resolvedPath?: string | null;
-    sessionKey?: string | null;
-  };
+  request: ExecApprovalRequestPayload;
   createdAtMs: number;
   expiresAtMs: number;
 };
@@ -32,6 +23,7 @@ export type ExecApprovalResolved = {
   decision: ExecApprovalDecision;
   resolvedBy?: string | null;
   ts: number;
+  request?: ExecApprovalRequestPayload | null;
 };
 
 export type ExecApprovalsDefaults = {
@@ -506,6 +498,50 @@ export function maxAsk(a: ExecAsk, b: ExecAsk): ExecAsk {
 }
 
 export type ExecApprovalDecision = "allow-once" | "allow-always" | "deny";
+
+/** Payload describing a pending exec approval request (v1 binding). */
+export type ExecApprovalRequestPayload = {
+  host?: string | null;
+  security?: string | null;
+  ask?: string | null;
+  command?: string;
+  commandArgv?: string[] | null;
+  envKeys?: string[] | null;
+  cwd?: string | null;
+  nodeId?: string | null;
+  agentId?: string | null;
+  sessionKey?: string | null;
+  resolvedPath?: string | null;
+  turnSourceChannel?: string | null;
+  turnSourceTo?: string | null;
+  turnSourceAccountId?: string | null;
+  turnSourceThreadId?: string | number | null;
+  /** System-run approval binding (v1). */
+  systemRunBindingV1?: SystemRunApprovalBindingV1 | null;
+  /** System-run approval plan (v2). */
+  systemRunPlanV2?: SystemRunApprovalPlanV2 | null;
+  [key: string]: unknown;
+};
+
+/** Cryptographic binding for a system-run approval (v1). */
+export type SystemRunApprovalBindingV1 = {
+  version: 1;
+  argv: string[];
+  cwd: string | null;
+  agentId: string | null;
+  sessionKey: string | null;
+  envHash: string | null;
+};
+
+/** Structured plan describing a system-run command to be approved (v2). */
+export type SystemRunApprovalPlanV2 = {
+  version: 2;
+  argv: string[];
+  cwd: string | null;
+  rawCommand: string | null;
+  agentId: string | null;
+  sessionKey: string | null;
+};
 
 export async function requestExecApprovalViaSocket(params: {
   socketPath: string;

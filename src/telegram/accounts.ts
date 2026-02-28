@@ -1,5 +1,7 @@
+import type { ActionGate } from "../agents/tools/common.js";
 import type { BotConfig } from "../config/config.js";
 import type { TelegramAccountConfig } from "../config/types.js";
+import type { TelegramActionConfig } from "../config/types.telegram.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import { listBoundAccountIds, resolveDefaultAgentBoundAccountId } from "../routing/bindings.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
@@ -136,4 +138,19 @@ export function listEnabledTelegramAccounts(cfg: BotConfig): ResolvedTelegramAcc
   return listTelegramAccountIds(cfg)
     .map((accountId) => resolveTelegramAccount({ cfg, accountId }))
     .filter((account) => account.enabled);
+}
+
+export function createTelegramActionGate(params: {
+  cfg: BotConfig;
+  accountId: string;
+}): ActionGate<TelegramActionConfig> {
+  const account = resolveTelegramAccount(params);
+  const actions = account.config.actions ?? {};
+  return (key, defaultValue = true) => {
+    const value = actions[key];
+    if (value === undefined) {
+      return defaultValue;
+    }
+    return value;
+  };
 }

@@ -4,6 +4,138 @@ import type { BotConfig } from "../../config/config.js";
 import type { TemplateContext } from "../templating.js";
 import type { ReplyPayload } from "../types.js";
 import type { FollowupRun } from "./queue.js";
+
+// ---------------------------------------------------------------------------
+// Helpers extracted from agent-runner (exposed for agent-runner-execution and
+// followup-runner to avoid circular dependencies).
+// ---------------------------------------------------------------------------
+
+/** Resolve auth profile overrides from a run object for a given provider. */
+export function resolveRunAuthProfile(
+  run: FollowupRun["run"],
+  provider: string,
+): { authProfileId?: string; authProfileIdSource?: "auto" | "user" } {
+  if (!run.authProfileId) {
+    return {};
+  }
+  // Only apply the stored profile id when it matches the provider prefix.
+  const profileProvider = run.authProfileId.split(":")[0];
+  if (profileProvider && profileProvider !== provider && run.authProfileId.includes(":")) {
+    return {};
+  }
+  return {
+    authProfileId: run.authProfileId,
+    authProfileIdSource: run.authProfileIdSource,
+  };
+}
+
+/** Resolve model fallback options from a run object for runWithModelFallback. */
+export function resolveModelFallbackOptions(run: FollowupRun["run"]): {
+  cfg: BotConfig | undefined;
+  provider: string;
+  model: string;
+  agentDir?: string;
+} {
+  return {
+    cfg: run.config,
+    provider: run.provider,
+    model: run.model,
+    agentDir: run.agentDir,
+  };
+}
+
+/** Build embedded run context objects from a run and session context. */
+export function buildEmbeddedRunContexts(params: {
+  run: FollowupRun["run"];
+  sessionCtx: TemplateContext;
+  hasRepliedRef?: { value: boolean };
+  provider: string;
+}): {
+  authProfile: { authProfileId?: string; authProfileIdSource?: "auto" | "user" };
+  embeddedContext: {
+    sessionId: string;
+    sessionKey?: string;
+    agentId?: string;
+    sessionFile: string;
+    workspaceDir: string;
+    agentDir?: string;
+    config?: BotConfig;
+    skillsSnapshot?: FollowupRun["run"]["skillsSnapshot"];
+    messageProvider?: string;
+    agentAccountId?: string;
+    hasRepliedRef?: { value: boolean };
+  };
+  senderContext: {
+    senderId?: string;
+    senderName?: string;
+    senderUsername?: string;
+    senderE164?: string;
+    senderIsOwner?: boolean;
+  };
+} {
+  const authProfile = resolveRunAuthProfile(params.run, params.provider);
+  const embeddedContext = {
+    sessionId: params.run.sessionId,
+    sessionKey: params.run.sessionKey,
+    agentId: params.run.agentId,
+    sessionFile: params.run.sessionFile,
+    workspaceDir: params.run.workspaceDir,
+    agentDir: params.run.agentDir,
+    config: params.run.config,
+    skillsSnapshot: params.run.skillsSnapshot,
+    messageProvider: params.run.messageProvider,
+    agentAccountId: params.run.agentAccountId,
+    hasRepliedRef: params.hasRepliedRef,
+  };
+  const senderContext = {
+    senderId: params.run.senderId,
+    senderName: params.run.senderName,
+    senderUsername: params.run.senderUsername,
+    senderE164: params.run.senderE164,
+    senderIsOwner: params.run.senderIsOwner,
+  };
+  return { authProfile, embeddedContext, senderContext };
+}
+
+/** Build base run params for runEmbeddedPiAgent. */
+export function buildEmbeddedRunBaseParams(params: {
+  run: FollowupRun["run"];
+  provider: string;
+  model: string;
+  runId: string;
+  authProfile: { authProfileId?: string; authProfileIdSource?: "auto" | "user" };
+}): {
+  provider: string;
+  model: string;
+  runId: string;
+  authProfileId?: string;
+  authProfileIdSource?: "auto" | "user";
+  thinkLevel?: FollowupRun["run"]["thinkLevel"];
+  verboseLevel?: FollowupRun["run"]["verboseLevel"];
+  reasoningLevel?: FollowupRun["run"]["reasoningLevel"];
+  timeoutMs: number;
+  blockReplyBreak: FollowupRun["run"]["blockReplyBreak"];
+  ownerNumbers?: string[];
+  execOverrides?: FollowupRun["run"]["execOverrides"];
+  bashElevated?: FollowupRun["run"]["bashElevated"];
+  enforceFinalTag?: boolean;
+} {
+  return {
+    provider: params.provider,
+    model: params.model,
+    runId: params.runId,
+    ...params.authProfile,
+    thinkLevel: params.run.thinkLevel,
+    verboseLevel: params.run.verboseLevel,
+    reasoningLevel: params.run.reasoningLevel,
+    timeoutMs: params.run.timeoutMs,
+    blockReplyBreak: params.run.blockReplyBreak,
+    ownerNumbers: params.run.ownerNumbers,
+    execOverrides: params.run.execOverrides,
+    bashElevated: params.run.bashElevated,
+    enforceFinalTag: params.run.enforceFinalTag,
+  };
+}
 import { getChannelDock } from "../../channels/dock.js";
 import { normalizeAnyChannelId, normalizeChannelId } from "../../channels/registry.js";
 import { isReasoningTagProvider } from "../../utils/provider-utils.js";

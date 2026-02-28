@@ -216,3 +216,80 @@ export const __testing = {
   handleTerminationSignal,
   releaseAllLocksSync,
 };
+
+export type SessionLockInspection = {
+  lockPath: string;
+  pid: number | null;
+  pidAlive: boolean;
+  ageMs: number | null;
+  stale: boolean;
+  staleReasons: string[];
+  removed: boolean;
+};
+
+export async function cleanStaleLockFiles(params: {
+  sessionsDir: string;
+  staleMs: number;
+  removeStale?: boolean;
+}): Promise<{ locks: SessionLockInspection[] }> {
+  const { sessionsDir, staleMs, removeStale = false } = params;
+  const locks: SessionLockInspection[] = [];
+  let entries: string[] = [];
+  try {
+    entries = await fs.readdir(sessionsDir);
+  } catch {
+    return { locks };
+  }
+  const now = Date.now();
+  for (const entry of entries) {
+    if (!entry.endsWith(".lock")) {
+      continue;
+    }
+    const lockPath = path.join(sessionsDir, entry);
+    let pid: number | null = null;
+    let pidAlive = false;
+    let ageMs: number | null = null;
+    let stale = false;
+    const staleReasons: string[] = [];
+    let removed = false;
+    try {
+      const stat = await fs.stat(lockPath);
+      ageMs = now - stat.mtimeMs;
+      let content: string | undefined;
+      try {
+        content = await fs.readFile(lockPath, "utf8");
+        const payload = JSON.parse(content) as LockFilePayload;
+        if (payload.pid) {
+          pid = payload.pid;
+          pidAlive = isPidAlive(pid);
+          if (!pidAlive) {
+            stale = true;
+            staleReasons.push("pid-dead");
+          }
+        } else {
+          stale = true;
+          staleReasons.push("no-pid");
+        }
+      } catch {
+        stale = true;
+        staleReasons.push("parse-error");
+      }
+      if (ageMs > staleMs) {
+        stale = true;
+        staleReasons.push("age");
+      }
+      if (stale && removeStale) {
+        try {
+          await fs.unlink(lockPath);
+          removed = true;
+        } catch {
+          // Best-effort.
+        }
+      }
+    } catch {
+      // Lock file may have been removed by another process.
+    }
+    locks.push({ lockPath, pid, pidAlive, ageMs, stale, staleReasons, removed });
+  }
+  return { locks };
+}

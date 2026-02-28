@@ -59,6 +59,12 @@ export type NodeInfo = {
   displayName?: string;
   platform?: string;
   version?: string;
+  coreVersion?: string;
+  uiVersion?: string;
+  deviceFamily?: string;
+  modelIdentifier?: string;
+  pathEnv?: string;
+  permissions?: unknown;
   caps: string[];
   commands: string[];
   connectedAtMs: number;
@@ -66,6 +72,9 @@ export type NodeInfo = {
   connected: boolean;
   local: boolean;
   podId?: string;
+  billingMode?: string;
+  dedicatedBudgetCents?: number;
+  dedicatedSpentCents?: number;
 };
 
 export class NodeRegistry {

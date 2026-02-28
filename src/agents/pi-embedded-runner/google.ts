@@ -1,8 +1,9 @@
-import { EventEmitter } from "node:events";
 import type { AgentMessage, AgentTool } from "@mariozechner/pi-agent-core";
 import type { SessionManager } from "@mariozechner/pi-coding-agent";
 import type { TSchema } from "@sinclair/typebox";
+import { EventEmitter } from "node:events";
 import type { BotConfig } from "../../config/config.js";
+import type { TranscriptPolicy } from "../transcript-policy.js";
 import { registerUnhandledRejectionHandler } from "../../infra/unhandled-rejections.js";
 import {
   hasInterSessionUserProvenance,
@@ -22,7 +23,6 @@ import {
   stripToolResultDetails,
   sanitizeToolUseResultPairing,
 } from "../session-transcript-repair.js";
-import type { TranscriptPolicy } from "../transcript-policy.js";
 import { resolveTranscriptPolicy } from "../transcript-policy.js";
 import { makeZeroUsageSnapshot } from "../usage.js";
 import { log } from "./logger.js";
@@ -486,4 +486,51 @@ export async function sanitizeSessionHistory(params: {
     sessionManager: params.sessionManager,
     sessionId: params.sessionId,
   }).messages;
+}
+
+/**
+ * Normalize Antigravity (google-antigravity) thinking blocks in the message
+ * history so they are compatible with the next turn's expected format.
+ * Returns the original array when nothing changes.
+ */
+export function sanitizeAntigravityThinkingBlocks(messages: AgentMessage[]): AgentMessage[] {
+  let touched = false;
+  const out: AgentMessage[] = [];
+  for (const msg of messages) {
+    if (
+      !msg ||
+      typeof msg !== "object" ||
+      msg.role !== "assistant" ||
+      !Array.isArray((msg as { content?: unknown }).content)
+    ) {
+      out.push(msg);
+      continue;
+    }
+    const assistantMsg = msg as { role: "assistant"; content: unknown[] };
+    const nextContent: unknown[] = [];
+    let changed = false;
+    for (const block of assistantMsg.content) {
+      if (
+        block &&
+        typeof block === "object" &&
+        (block as { type?: unknown }).type === "thinking" &&
+        !(block as { signature?: unknown }).signature
+      ) {
+        // Drop unsigned thinking blocks which can confuse Antigravity
+        touched = true;
+        changed = true;
+        continue;
+      }
+      nextContent.push(block);
+    }
+    if (changed) {
+      out.push({
+        ...assistantMsg,
+        content: nextContent.length > 0 ? nextContent : [{ type: "text", text: "" }],
+      } as AgentMessage);
+    } else {
+      out.push(msg);
+    }
+  }
+  return touched ? out : messages;
 }

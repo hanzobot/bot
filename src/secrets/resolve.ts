@@ -189,7 +189,7 @@ async function readFileProviderPayload(params: {
     return await (cache.filePayloadByProvider.get(cacheKey) as Promise<unknown>);
   }
 
-  const filePath = resolveUserPath(params.providerConfig.path);
+  const filePath = resolveUserPath(params.providerConfig.path ?? "");
   const readPromise = (async () => {
     const secureFilePath = await assertSecurePath({
       targetPath: filePath,
@@ -482,7 +482,7 @@ async function resolveExecRefs(params: {
     );
   }
 
-  const commandPath = resolveUserPath(params.providerConfig.command);
+  const commandPath = resolveUserPath(params.providerConfig.command ?? "");
   const secureCommandPath = await assertSecurePath({
     targetPath: commandPath,
     label: `secrets.providers.${params.providerName}.command`,

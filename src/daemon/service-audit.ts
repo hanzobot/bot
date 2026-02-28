@@ -381,3 +381,21 @@ export async function auditGatewayServiceConfig(params: {
 
   return { ok: issues.length === 0, issues };
 }
+
+export function checkTokenDrift(params: {
+  serviceToken: string | undefined;
+  configToken: string | undefined;
+}): { message: string; detail?: string } | null {
+  const service = params.serviceToken?.trim();
+  const config = params.configToken?.trim();
+  if (!service || !config) {
+    return null;
+  }
+  if (service === config) {
+    return null;
+  }
+  return {
+    message: "Gateway token mismatch detected.",
+    detail: "The running service token differs from the current config token.",
+  };
+}

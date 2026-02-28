@@ -308,6 +308,27 @@ export async function resolveModelsCommandReply(params: {
   return payload;
 }
 
+/**
+ * Format the header text for the models available list.
+ * Used by Telegram inline keyboard callbacks.
+ */
+export function formatModelsAvailableHeader(params: {
+  provider?: string;
+  total?: number;
+  cfg?: BotConfig;
+  agentDir?: string;
+  sessionEntry?: unknown;
+}): string {
+  const parts: string[] = [];
+  if (params.provider) {
+    parts.push(`Provider: ${params.provider}`);
+  }
+  if (typeof params.total === "number") {
+    parts.push(`Models: ${params.total}`);
+  }
+  return parts.length > 0 ? parts.join(" | ") : "Available models";
+}
+
 export const handleModelsCommand: CommandHandler = async (params, allowTextCommands) => {
   if (!allowTextCommands) {
     return null;

@@ -1,4 +1,8 @@
 import type { Api, Model } from "@mariozechner/pi-ai";
+import type {
+  AuthStorage as PiAuthStorage,
+  ModelRegistry as PiModelRegistry,
+} from "@mariozechner/pi-coding-agent";
 import type { BotConfig } from "../../config/config.js";
 import type { ModelDefinitionConfig } from "../../config/types.js";
 import { resolveBotAgentDir } from "../agent-paths.js";
@@ -7,12 +11,7 @@ import { buildModelAliasLines } from "../model-alias-lines.js";
 import { normalizeModelCompat } from "../model-compat.js";
 import { resolveForwardCompatModel } from "../model-forward-compat.js";
 import { normalizeProviderId } from "../model-selection.js";
-import {
-  discoverAuthStorage,
-  discoverModels,
-  type AuthStorage,
-  type ModelRegistry,
-} from "../pi-model-discovery.js";
+import { discoverAuthStorage, discoverModels } from "../pi-model-discovery.js";
 
 type InlineModelEntry = ModelDefinitionConfig & { provider: string; baseUrl?: string };
 type InlineProviderConfig = {
@@ -48,8 +47,8 @@ export function resolveModel(
 ): {
   model?: Model<Api>;
   error?: string;
-  authStorage: AuthStorage;
-  modelRegistry: ModelRegistry;
+  authStorage: PiAuthStorage;
+  modelRegistry: PiModelRegistry;
 } {
   const resolvedAgentDir = agentDir ?? resolveBotAgentDir();
   const authStorage = discoverAuthStorage(resolvedAgentDir);

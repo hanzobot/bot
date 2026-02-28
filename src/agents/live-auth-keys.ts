@@ -73,6 +73,50 @@ export function isAnthropicRateLimitError(message: string): boolean {
   return false;
 }
 
+export function collectProviderApiKeys(provider: string): string[] {
+  const normalizedProvider = provider.trim().toUpperCase().replace(/-/g, "_");
+  const envVarName = `${normalizedProvider}_API_KEY`;
+  const envVarNameMulti = `${normalizedProvider}_API_KEYS`;
+  const forcedSingle = process.env[`BOT_LIVE_${normalizedProvider}_KEY`]?.trim();
+  if (forcedSingle) {
+    return [forcedSingle];
+  }
+  const fromList = parseKeyList(process.env[`BOT_LIVE_${normalizedProvider}_KEYS`]);
+  const fromEnv = collectEnvPrefixedKeys(envVarName);
+  const primary = process.env[envVarName]?.trim();
+  const fromMulti = parseKeyList(process.env[envVarNameMulti]);
+
+  const seen = new Set<string>();
+  const result: string[] = [];
+  const add = (value?: string) => {
+    if (!value) {
+      return;
+    }
+    if (seen.has(value)) {
+      return;
+    }
+    seen.add(value);
+    result.push(value);
+  };
+  for (const value of fromList) {
+    add(value);
+  }
+  for (const value of fromMulti) {
+    add(value);
+  }
+  if (primary) {
+    add(primary);
+  }
+  for (const value of fromEnv) {
+    add(value);
+  }
+  return result;
+}
+
+export function isApiKeyRateLimitError(message: string): boolean {
+  return isAnthropicRateLimitError(message);
+}
+
 export function isAnthropicBillingError(message: string): boolean {
   const lower = message.toLowerCase();
   if (lower.includes("credit balance")) {

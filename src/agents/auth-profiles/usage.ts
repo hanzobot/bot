@@ -243,6 +243,29 @@ function calculateAuthProfileBillingDisableMsWithConfig(params: {
   return Math.min(maxMs, raw);
 }
 
+/**
+ * Resolve a human-readable reason why none of the given profiles are currently available.
+ * Returns null if at least one profile is available.
+ */
+export function resolveProfilesUnavailableReason(
+  store: AuthProfileStore,
+  profileIds: string[],
+): string | null {
+  if (profileIds.length === 0) {
+    return "No auth profiles configured.";
+  }
+  const allInCooldown = profileIds.every((id) => isProfileInCooldown(store, id));
+  if (!allInCooldown) {
+    return null;
+  }
+  const soonest = getSoonestCooldownExpiry(store, profileIds);
+  if (soonest && soonest > Date.now()) {
+    const secs = Math.ceil((soonest - Date.now()) / 1000);
+    return `All auth profiles are in cooldown. Try again in ${secs}s.`;
+  }
+  return "All auth profiles are currently unavailable.";
+}
+
 export function resolveProfileUnusableUntilForDisplay(
   store: AuthProfileStore,
   profileId: string,

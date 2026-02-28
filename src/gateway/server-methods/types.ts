@@ -21,6 +21,8 @@ export type GatewayClient = {
   connId?: string;
   /** Resolved tenant context (multi-tenant IAM mode). */
   tenant?: TenantContext;
+  /** Client IP address (resolved from request headers). */
+  clientIp?: string;
 };
 
 export type RespondFn = (
@@ -37,6 +39,7 @@ export type GatewayRequestContext = {
   cron: CronService;
   cronStorePath: string;
   execApprovalManager?: ExecApprovalManager;
+  hasExecApprovalClients?: () => boolean;
   loadGatewayModelCatalog: () => Promise<ModelCatalogEntry[]>;
   getHealthCache: () => HealthSummary | null;
   refreshHealthSnapshot: (opts?: { probe?: boolean }) => Promise<HealthSummary>;

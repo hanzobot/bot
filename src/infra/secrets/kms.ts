@@ -416,7 +416,7 @@ export async function resolveKmsSecretReference(params: {
 }
 
 export async function resolveSecretReferenceValue(params: {
-  value: string | undefined;
+  value: unknown;
   cfg?: BotConfig;
   env?: NodeJS.ProcessEnv;
   fetchFn?: typeof fetch;

@@ -242,6 +242,27 @@ function resolveZaiGlm5ForwardCompatModel(
   } as Model<Api>);
 }
 
+export type AntigravityForwardCompatCandidate = {
+  id: string;
+  templatePrefixes: string[];
+};
+
+/**
+ * Forward-compat candidates for google-antigravity (Opus 4.6 era).
+ * These model IDs may not yet be present in the pi-ai catalog.
+ */
+export const ANTIGRAVITY_OPUS_46_FORWARD_COMPAT_CANDIDATES: readonly AntigravityForwardCompatCandidate[] =
+  [
+    {
+      id: "claude-opus-4-6",
+      templatePrefixes: ["claude-opus-4-5", "claude-opus-4"],
+    },
+    {
+      id: "claude-opus-4.6",
+      templatePrefixes: ["claude-opus-4.5", "claude-opus-4"],
+    },
+  ];
+
 export function resolveForwardCompatModel(
   provider: string,
   modelId: string,

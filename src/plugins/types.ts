@@ -307,7 +307,14 @@ export type PluginHookName =
   | "session_start"
   | "session_end"
   | "gateway_start"
-  | "gateway_stop";
+  | "gateway_stop"
+  | "before_model_resolve"
+  | "before_prompt_build"
+  | "before_message_write"
+  | "subagent_spawning"
+  | "subagent_delivery_target"
+  | "subagent_spawned"
+  | "subagent_ended";
 
 // Agent context shared across agent hooks
 export type PluginHookAgentContext = {
@@ -522,6 +529,131 @@ export type PluginHookGatewayStopEvent = {
   reason?: string;
 };
 
+// Subagent context
+export type PluginHookSubagentContext = PluginHookAgentContext & {
+  parentSessionKey?: string;
+  parentAgentId?: string;
+  childSessionKey?: string;
+  requesterSessionKey?: string;
+  runId?: string;
+  [key: string]: unknown;
+};
+
+// before_model_resolve hook
+export type PluginHookBeforeModelResolveEvent = {
+  provider: string;
+  model: string;
+};
+
+export type PluginHookBeforeModelResolveResult = {
+  providerOverride?: string;
+  modelOverride?: string;
+};
+
+// before_prompt_build hook
+export type PluginHookBeforePromptBuildEvent = {
+  prompt: string;
+  sessionKey?: string;
+};
+
+export type PluginHookBeforePromptBuildResult = {
+  prompt?: string;
+  prependContext?: string;
+  extraSystemPrompt?: string;
+  /** Alias for extraSystemPrompt for backward compat. */
+  systemPrompt?: string;
+};
+
+// before_message_write hook
+export type PluginHookBeforeMessageWriteEvent = {
+  message: AgentMessage;
+  toolName?: string;
+  toolCallId?: string;
+};
+
+export type PluginHookBeforeMessageWriteResult = {
+  message?: AgentMessage | null;
+  skip?: boolean;
+  block?: boolean;
+};
+
+// subagent_spawning hook
+export type PluginHookSubagentSpawningEvent = {
+  agentId?: string;
+  childSessionKey?: string;
+  label?: string;
+  mode?: string;
+  requester?: {
+    channel?: string;
+    accountId?: string;
+    to?: string;
+    threadId?: string | number;
+  };
+  threadRequested?: boolean;
+  prompt?: string;
+  model?: string;
+  provider?: string;
+  [key: string]: unknown;
+};
+
+export type PluginHookSubagentSpawningResult = {
+  cancel?: boolean;
+  status?: "ok" | "error";
+  error?: string;
+  threadBindingReady?: boolean;
+  [key: string]: unknown;
+};
+
+// subagent_delivery_target hook
+export type PluginHookSubagentDeliveryTargetEvent = {
+  agentId?: string;
+  childSessionKey?: string;
+  requesterSessionKey?: string;
+  requesterOrigin?: unknown;
+  childRunId?: string;
+  spawnMode?: string;
+  expectsCompletionMessage?: boolean;
+  targetChannel?: string;
+  [key: string]: unknown;
+};
+
+export type PluginHookSubagentDeliveryTargetResult = {
+  targetChannel?: string;
+  origin?: unknown;
+  routeMode?: string;
+  [key: string]: unknown;
+};
+
+// subagent_spawned hook
+export type PluginHookSubagentSpawnedEvent = {
+  agentId?: string;
+  sessionKey?: string;
+  runId?: string;
+  childSessionKey?: string;
+  label?: string;
+  requester?: unknown;
+  threadRequested?: boolean;
+  mode?: string;
+  [key: string]: unknown;
+};
+
+// subagent_ended hook
+export type PluginHookSubagentEndedEvent = {
+  agentId?: string;
+  sessionKey?: string;
+  targetSessionKey?: string;
+  targetKind?: string;
+  reason?: string;
+  sendFarewell?: boolean;
+  accountId?: string;
+  runId?: string;
+  outcome?: string;
+  error?: string;
+  success?: boolean;
+  durationMs?: number;
+  [key: string]: unknown;
+};
+
 // Hook handler types mapped by hook name
 export type PluginHookHandlerMap = {
   before_agent_start: (
@@ -585,6 +717,43 @@ export type PluginHookHandlerMap = {
   gateway_stop: (
     event: PluginHookGatewayStopEvent,
     ctx: PluginHookGatewayContext,
+  ) => Promise<void> | void;
+  before_model_resolve: (
+    event: PluginHookBeforeModelResolveEvent,
+    ctx: PluginHookAgentContext,
+  ) =>
+    | Promise<PluginHookBeforeModelResolveResult | void>
+    | PluginHookBeforeModelResolveResult
+    | void;
+  before_prompt_build: (
+    event: PluginHookBeforePromptBuildEvent,
+    ctx: PluginHookAgentContext,
+  ) => Promise<PluginHookBeforePromptBuildResult | void> | PluginHookBeforePromptBuildResult | void;
+  before_message_write: (
+    event: PluginHookBeforeMessageWriteEvent,
+    ctx: PluginHookAgentContext,
+  ) =>
+    | Promise<PluginHookBeforeMessageWriteResult | void>
+    | PluginHookBeforeMessageWriteResult
+    | void;
+  subagent_spawning: (
+    event: PluginHookSubagentSpawningEvent,
+    ctx: PluginHookSubagentContext,
+  ) => Promise<PluginHookSubagentSpawningResult | void> | PluginHookSubagentSpawningResult | void;
+  subagent_delivery_target: (
+    event: PluginHookSubagentDeliveryTargetEvent,
+    ctx: PluginHookSubagentContext,
+  ) =>
+    | Promise<PluginHookSubagentDeliveryTargetResult | void>
+    | PluginHookSubagentDeliveryTargetResult
+    | void;
+  subagent_spawned: (
+    event: PluginHookSubagentSpawnedEvent,
+    ctx: PluginHookSubagentContext,
+  ) => Promise<void> | void;
+  subagent_ended: (
+    event: PluginHookSubagentEndedEvent,
+    ctx: PluginHookSubagentContext,
   ) => Promise<void> | void;
 };
 

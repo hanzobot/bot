@@ -14,6 +14,23 @@ type UpdateCheckState = {
   lastNotifiedTag?: string;
 };
 
+export type UpdateAvailable = {
+  current: string;
+  latest: string;
+  tag: string;
+  publishedAt?: string;
+};
+
+let _updateAvailable: UpdateAvailable | null = null;
+
+export function getUpdateAvailable(): UpdateAvailable | null {
+  return _updateAvailable;
+}
+
+export function setUpdateAvailable(update: UpdateAvailable | null): void {
+  _updateAvailable = update;
+}
+
 const UPDATE_CHECK_FILENAME = "update-check.json";
 const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 

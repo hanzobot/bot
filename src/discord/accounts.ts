@@ -1,4 +1,6 @@
+import type { ActionGate } from "../agents/tools/common.js";
 import type { BotConfig } from "../config/config.js";
+import type { DiscordActionConfig } from "../config/types.discord.js";
 import type { DiscordAccountConfig } from "../config/types.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
 import { resolveDiscordToken } from "./token.js";
@@ -76,4 +78,19 @@ export function listEnabledDiscordAccounts(cfg: BotConfig): ResolvedDiscordAccou
   return listDiscordAccountIds(cfg)
     .map((accountId) => resolveDiscordAccount({ cfg, accountId }))
     .filter((account) => account.enabled);
+}
+
+export function createDiscordActionGate(params: {
+  cfg: BotConfig;
+  accountId: string;
+}): ActionGate<DiscordActionConfig> {
+  const account = resolveDiscordAccount(params);
+  const actions = account.config.actions ?? {};
+  return (key, defaultValue = true) => {
+    const value = actions[key];
+    if (value === undefined) {
+      return defaultValue;
+    }
+    return value;
+  };
 }

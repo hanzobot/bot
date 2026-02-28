@@ -30,6 +30,8 @@ export type ResolvedGatewayAuth = {
   allowTailscale: boolean;
   trustedProxy?: GatewayTrustedProxyConfig;
   iam?: GatewayIamConfig;
+  /** Source of the resolved mode: "config" | "env" | "override" | "default". */
+  modeSource?: "config" | "env" | "override" | "default";
 };
 
 export type GatewayAuthResult = {
@@ -77,7 +79,7 @@ function resolveTailscaleClientIp(req?: IncomingMessage): string | undefined {
     return undefined;
   }
   const forwardedFor = headerValue(req.headers?.["x-forwarded-for"]);
-  return forwardedFor ? parseForwardedForClientIp(forwardedFor) : undefined;
+  return forwardedFor ? parseForwardedForClientIp({ forwardedFor }) : undefined;
 }
 
 function resolveRequestClientIp(
@@ -193,6 +195,8 @@ export function resolveGatewayAuth(params: {
   tailscaleMode?: GatewayTailscaleMode;
   /** Accepted for caller convenience; not used internally. */
   cfg?: unknown;
+  /** Optional runtime auth override (e.g. from CLI flags). */
+  authOverride?: Partial<GatewayAuthConfig> | null;
 }): ResolvedGatewayAuth {
   const authConfig = params.authConfig ?? {};
   const env = params.env ?? process.env;
@@ -343,6 +347,8 @@ export async function authorizeGatewayConnect(params: {
   clientIp?: string;
   /** Optional limiter scope; defaults to shared-secret auth scope. */
   rateLimitScope?: string;
+  /** Allow X-Real-IP header as fallback when X-Forwarded-For is absent. */
+  allowRealIpFallback?: boolean;
 }): Promise<GatewayAuthResult> {
   const { auth, connectAuth, req, trustedProxies } = params;
   const tailscaleWhois = params.tailscaleWhois ?? readTailscaleWhoisIdentity;
@@ -465,3 +471,9 @@ export async function authorizeGatewayConnect(params: {
   limiter?.recordFailure(ip, rateLimitScope);
   return { ok: false, reason: "unauthorized" };
 }
+
+/** Alias for authorizeGatewayConnect (WS control UI variant). */
+export const authorizeWsControlUiGatewayConnect = authorizeGatewayConnect;
+
+/** Alias for authorizeGatewayConnect (HTTP variant). */
+export const authorizeHttpGatewayConnect = authorizeGatewayConnect;

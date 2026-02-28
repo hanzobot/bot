@@ -477,6 +477,23 @@ export function filterBootstrapFilesForSession(
   return files.filter((file) => MINIMAL_BOOTSTRAP_ALLOWLIST.has(file.name));
 }
 
+export type ExtraBootstrapDiagnostic = {
+  pattern: string;
+  reason: string;
+};
+
+export async function loadExtraBootstrapFilesWithDiagnostics(
+  dir: string,
+  extraPatterns: string[],
+): Promise<{ files: WorkspaceBootstrapFile[]; diagnostics: ExtraBootstrapDiagnostic[] }> {
+  const files = await loadExtraBootstrapFiles(dir, extraPatterns);
+  // Produce diagnostics for patterns that yielded no files.
+  const diagnostics: ExtraBootstrapDiagnostic[] = extraPatterns
+    .filter((pattern) => !files.some((f) => f.path.includes(pattern.replace(/\*/g, ""))))
+    .map((pattern) => ({ pattern, reason: "no-match" }));
+  return { files, diagnostics };
+}
+
 export async function loadExtraBootstrapFiles(
   dir: string,
   extraPatterns: string[],

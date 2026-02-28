@@ -1,3 +1,4 @@
+import fs from "node:fs/promises";
 import path from "node:path";
 import { resolvePreferredBotTmpDir } from "../infra/tmp-bot-dir.js";
 
@@ -46,4 +47,40 @@ export function resolvePathsWithinRoot(params: {
     resolvedPaths.push(pathResult.path);
   }
   return { ok: true, paths: resolvedPaths };
+}
+
+export async function resolveWritablePathWithinRoot(params: {
+  rootDir: string;
+  requestedPath: string;
+  scopeLabel: string;
+  defaultFileName?: string;
+}): Promise<{ ok: true; path: string } | { ok: false; error: string }> {
+  return resolvePathWithinRoot(params);
+}
+
+export async function resolveExistingPathsWithinRoot(params: {
+  rootDir: string;
+  requestedPaths: string[];
+  scopeLabel: string;
+}): Promise<{ ok: true; paths: string[] } | { ok: false; error: string }> {
+  const result = resolvePathsWithinRoot(params);
+  if (!result.ok) {
+    return result;
+  }
+  for (const p of result.paths) {
+    try {
+      await fs.access(p);
+    } catch {
+      return { ok: false, error: `File not found: ${p}` };
+    }
+  }
+  return result;
+}
+
+export async function resolveStrictExistingPathsWithinRoot(params: {
+  rootDir: string;
+  requestedPaths: string[];
+  scopeLabel: string;
+}): Promise<{ ok: true; paths: string[] } | { ok: false; error: string }> {
+  return resolveExistingPathsWithinRoot(params);
 }

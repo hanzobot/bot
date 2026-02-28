@@ -1,19 +1,19 @@
+import type { ReplyPayload } from "../../auto-reply/types.js";
+import type { BotConfig } from "../../config/config.js";
+import type { CronJob, CronRunTelemetry } from "../types.js";
+import type { DeliveryTargetResolution } from "./delivery-target.js";
+import type { RunCronAgentTurnResult } from "./run.js";
 import { runSubagentAnnounceFlow } from "../../agents/subagent-announce.js";
 import { countActiveDescendantRuns } from "../../agents/subagent-registry.js";
 import { SILENT_REPLY_TOKEN } from "../../auto-reply/tokens.js";
-import type { ReplyPayload } from "../../auto-reply/types.js";
 import { createOutboundSendDeps, type CliDeps } from "../../cli/outbound-send-deps.js";
-import type { BotConfig } from "../../config/config.js";
 import { resolveAgentMainSessionKey } from "../../config/sessions.js";
 import { deliverOutboundPayloads } from "../../infra/outbound/deliver.js";
 import { resolveAgentOutboundIdentity } from "../../infra/outbound/identity.js";
 import { resolveOutboundSessionRoute } from "../../infra/outbound/outbound-session.js";
 import { buildOutboundSessionContext } from "../../infra/outbound/session-context.js";
 import { logWarn } from "../../logger.js";
-import type { CronJob, CronRunTelemetry } from "../types.js";
-import type { DeliveryTargetResolution } from "./delivery-target.js";
 import { pickSummaryFromOutput } from "./helpers.js";
-import type { RunCronAgentTurnResult } from "./run.js";
 import {
   expectsSubagentFollowup,
   isLikelyInterimCronMessage,
@@ -179,7 +179,7 @@ export async function dispatchCronDelivery(
       const deliveryResults = await deliverOutboundPayloads({
         cfg: params.cfgWithAgentDefaults,
         channel: delivery.channel,
-        to: delivery.to,
+        to: delivery.to ?? "",
         accountId: delivery.accountId,
         threadId: delivery.threadId,
         payloads: payloadsForDelivery,
@@ -222,7 +222,7 @@ export async function dispatchCronDelivery(
       fallbackSessionKey: announceMainSessionKey,
       delivery: {
         channel: delivery.channel,
-        to: delivery.to,
+        to: delivery.to ?? "",
         accountId: delivery.accountId,
         threadId: delivery.threadId,
       },
@@ -300,7 +300,7 @@ export async function dispatchCronDelivery(
         requesterSessionKey: announceSessionKey,
         requesterOrigin: {
           channel: delivery.channel,
-          to: delivery.to,
+          to: delivery.to ?? "",
           accountId: delivery.accountId,
           threadId: delivery.threadId,
         },

@@ -78,12 +78,16 @@ export function registerBrowserExtensionCommands(
     .description("Install the Chrome extension to a stable local path")
     .action(async (_opts, cmd) => {
       const parent = parentOpts(cmd);
-      let installed: { path: string };
+      let installed: { path: string } | undefined;
       try {
         installed = await installChromeExtension();
       } catch (err) {
         defaultRuntime.error(danger(String(err)));
         defaultRuntime.exit(1);
+        return;
+      }
+      if (!installed) {
+        return;
       }
 
       if (parent?.json) {

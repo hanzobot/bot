@@ -171,6 +171,12 @@ export function buildAgentSystemPrompt(params: {
   reasoningLevel?: ReasoningLevel;
   extraSystemPrompt?: string;
   ownerNumbers?: string[];
+  /** Controls how owner phone numbers are displayed in the prompt. */
+  ownerDisplay?: "raw" | "hash";
+  /** Secret for hashing owner display numbers. */
+  ownerDisplaySecret?: string;
+  /** Whether ACP-specific routing guidance should be included. */
+  acpEnabled?: boolean;
   reasoningTagHint?: boolean;
   toolNames?: string[];
   toolSummaries?: Record<string, string>;

@@ -1,9 +1,9 @@
+import type { AllowlistMatch } from "../channels/allowlist-match.js";
 import {
   firstDefined,
   isSenderIdAllowed,
   mergeDmAllowFromSources,
 } from "../channels/allow-from.js";
-import type { AllowlistMatch } from "../channels/allowlist-match.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 
 export type NormalizedAllowFrom = {
@@ -62,6 +62,9 @@ export const normalizeDmAllowFromWithStore = (params: {
   storeAllowFrom?: string[];
   dmPolicy?: string;
 }): NormalizedAllowFrom => normalizeAllowFrom(mergeDmAllowFromSources(params));
+
+/** Alias for normalizeDmAllowFromWithStore for call sites that use the longer name. */
+export const normalizeAllowFromWithStore = normalizeDmAllowFromWithStore;
 
 export const isSenderAllowed = (params: {
   allow: NormalizedAllowFrom;

@@ -106,6 +106,8 @@ export type RunCronAgentTurnResult = {
   /** Last non-empty agent text output (not truncated). */
   outputText?: string;
   error?: string;
+  /** Structured error category (e.g. "delivery-target"). */
+  errorKind?: string;
   sessionId?: string;
   sessionKey?: string;
   /**
@@ -116,6 +118,14 @@ export type RunCronAgentTurnResult = {
    * messages.  See: https://github.com/hanzoai/bot/issues/15692
    */
   delivered?: boolean;
+  /** Whether delivery was attempted (even if it failed). */
+  deliveryAttempted?: boolean;
+  /** Model used for the run. */
+  model?: string;
+  /** Provider used for the run. */
+  provider?: string;
+  /** Token usage summary. */
+  usage?: import("../types.js").CronUsageSummary;
 };
 
 export async function runCronIsolatedAgentTurn(params: {
@@ -126,6 +136,7 @@ export async function runCronIsolatedAgentTurn(params: {
   sessionKey: string;
   agentId?: string;
   lane?: string;
+  abortSignal?: AbortSignal;
 }): Promise<RunCronAgentTurnResult> {
   const isFastTestEnv = process.env.BOT_TEST_FAST === "1";
   const defaultAgentId = resolveDefaultAgentId(params.cfg);

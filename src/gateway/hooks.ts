@@ -381,3 +381,17 @@ export function normalizeAgentPayload(payload: Record<string, unknown>):
     },
   };
 }
+
+export type HookAgentDispatchPayload = HookAgentPayload & {
+  allowUnsafeExternalContent?: boolean;
+};
+
+export function normalizeHookDispatchSessionKey(params: {
+  sessionKey?: string;
+  targetAgentId?: string;
+}): string | undefined {
+  if (params.sessionKey?.trim()) {
+    return params.sessionKey.trim();
+  }
+  return undefined;
+}

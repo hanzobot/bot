@@ -1,3 +1,5 @@
+import path from "node:path";
+import type { SkillBinTrustEntry } from "../infra/exec-approvals-allowlist.js";
 import { resolveBrowserConfig } from "../browser/config.js";
 import { loadConfig } from "../config/config.js";
 import { GatewayClient } from "../gateway/client.js";
@@ -29,7 +31,7 @@ type NodeHostRunOptions = {
 const DEFAULT_NODE_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
 
 class SkillBinsCache implements SkillBinsProvider {
-  private bins = new Set<string>();
+  private bins: SkillBinTrustEntry[] = [];
   private lastRefresh = 0;
   private readonly ttlMs = 90_000;
   private readonly fetch: () => Promise<string[]>;
@@ -38,7 +40,7 @@ class SkillBinsCache implements SkillBinsProvider {
     this.fetch = fetch;
   }
 
-  async current(force = false): Promise<Set<string>> {
+  async current(force = false): Promise<SkillBinTrustEntry[]> {
     if (force || Date.now() - this.lastRefresh > this.ttlMs) {
       await this.refresh();
     }
@@ -47,12 +49,15 @@ class SkillBinsCache implements SkillBinsProvider {
 
   private async refresh() {
     try {
-      const bins = await this.fetch();
-      this.bins = new Set(bins);
+      const rawBins = await this.fetch();
+      this.bins = rawBins.map((b) => ({
+        name: path.basename(b),
+        resolvedPath: b,
+      }));
       this.lastRefresh = Date.now();
     } catch {
       if (!this.lastRefresh) {
-        this.bins = new Set();
+        this.bins = [];
       }
     }
   }

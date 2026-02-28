@@ -181,6 +181,8 @@ type DeliverOutboundPayloadsCoreParams = {
   onPayload?: (payload: NormalizedOutboundPayload) => void;
   /** Active agent id for media local-root scoping. */
   agentId?: string;
+  /** Outbound session context for hook dispatch and workspace scoping. */
+  session?: import("./session-context.js").OutboundSessionContext;
   mirror?: {
     sessionKey: string;
     agentId?: string;

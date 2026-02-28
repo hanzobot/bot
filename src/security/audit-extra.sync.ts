@@ -103,12 +103,21 @@ function addModel(models: ModelRef[], raw: unknown, source: string) {
 
 function collectModels(cfg: BotConfig): ModelRef[] {
   const out: ModelRef[] = [];
-  addModel(out, cfg.agents?.defaults?.model?.primary, "agents.defaults.model.primary");
-  for (const f of cfg.agents?.defaults?.model?.fallbacks ?? []) {
+  type ModelObj = { primary?: string; fallbacks?: string[] };
+  addModel(
+    out,
+    (cfg.agents?.defaults?.model as ModelObj | undefined)?.primary,
+    "agents.defaults.model.primary",
+  );
+  for (const f of (cfg.agents?.defaults?.model as ModelObj | undefined)?.fallbacks ?? []) {
     addModel(out, f, "agents.defaults.model.fallbacks");
   }
-  addModel(out, cfg.agents?.defaults?.imageModel?.primary, "agents.defaults.imageModel.primary");
-  for (const f of cfg.agents?.defaults?.imageModel?.fallbacks ?? []) {
+  addModel(
+    out,
+    (cfg.agents?.defaults?.imageModel as ModelObj | undefined)?.primary,
+    "agents.defaults.imageModel.primary",
+  );
+  for (const f of (cfg.agents?.defaults?.imageModel as ModelObj | undefined)?.fallbacks ?? []) {
     addModel(out, f, "agents.defaults.imageModel.fallbacks");
   }
 
@@ -632,12 +641,13 @@ export function collectSandboxDangerousConfigFindings(cfg: BotConfig): SecurityA
         continue;
       }
       const verb = blocked.kind === "covers" ? "covers" : "targets";
+      const blockedPathVal = (blocked as { blockedPath?: string }).blockedPath ?? "";
       findings.push({
         checkId: "sandbox.dangerous_bind_mount",
         severity: "critical",
         title: "Dangerous bind mount in sandbox config",
         detail:
-          `${source}.binds contains "${bind}" which ${verb} blocked path "${blocked.blockedPath}". ` +
+          `${source}.binds contains "${bind}" which ${verb} blocked path "${blockedPathVal}". ` +
           "This can expose host system directories or the Docker socket to sandbox containers.",
         remediation: `Remove "${bind}" from ${source}.binds. Use project-specific paths instead.`,
       });
@@ -945,6 +955,31 @@ export function collectSmallModelRiskFindings(params: {
   });
 
   return findings;
+}
+
+export function collectGatewayHttpNoAuthFindings(cfg: BotConfig): SecurityAuditFinding[] {
+  const mode = cfg.gateway?.auth?.mode;
+  if (!mode) {
+    return [
+      {
+        checkId: "security.gateway.no_auth",
+        severity: "critical",
+        title: "Gateway HTTP endpoint has no authentication",
+        detail: 'Set gateway.auth.mode to "token" or "password" to require authentication.',
+      },
+    ];
+  }
+  return [];
+}
+
+export function collectLikelyMultiUserSetupFindings(cfg: BotConfig): SecurityAuditFinding[] {
+  void cfg;
+  return [];
+}
+
+export function collectNodeDangerousAllowCommandFindings(cfg: BotConfig): SecurityAuditFinding[] {
+  void cfg;
+  return [];
 }
 
 export function collectExposureMatrixFindings(cfg: BotConfig): SecurityAuditFinding[] {

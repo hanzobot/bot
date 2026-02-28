@@ -44,7 +44,7 @@ function errorBackoffMs(consecutiveErrors: number): number {
  * Handles consecutive error tracking, exponential backoff, one-shot disable,
  * and nextRunAtMs computation. Returns `true` if the job should be deleted.
  */
-function applyJobResult(
+export function applyJobResult(
   state: CronServiceState,
   job: CronJob,
   result: {
@@ -52,6 +52,7 @@ function applyJobResult(
     error?: string;
     startedAt: number;
     endedAt: number;
+    delivered?: boolean;
   },
 ): boolean {
   job.state.runningAtMs = undefined;
@@ -426,6 +427,10 @@ async function executeJobCore(
   summary?: string;
   sessionId?: string;
   sessionKey?: string;
+  delivered?: boolean;
+  model?: string;
+  provider?: string;
+  usage?: import("../types.js").CronUsageSummary;
 }> {
   if (job.sessionTarget === "main") {
     const text = resolveJobPayloadTextForMain(job);
@@ -620,3 +625,6 @@ export function emit(state: CronServiceState, evt: CronEvent) {
     /* ignore */
   }
 }
+
+/** Alias for executeJobCore — runs the job payload with optional timeout handling. */
+export const executeJobCoreWithTimeout = executeJobCore;

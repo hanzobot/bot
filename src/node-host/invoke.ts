@@ -115,9 +115,7 @@ export type NodeInvokeRequestPayload = {
   idempotencyKey?: string | null;
 };
 
-export type SkillBinsProvider = {
-  current(force?: boolean): Promise<Set<string>>;
-};
+export type SkillBinsProvider = import("./invoke-types.js").SkillBinsProvider;
 
 function resolveExecSecurity(value?: string): ExecSecurity {
   return value === "deny" || value === "allowlist" || value === "full" ? value : "allowlist";
@@ -590,7 +588,7 @@ export async function handleInvoke(
   const runId = params.runId?.trim() || crypto.randomUUID();
   const env = sanitizeEnv(params.env ?? undefined);
   const safeBins = resolveSafeBins(agentExec?.safeBins ?? cfg.tools?.exec?.safeBins);
-  const bins = autoAllowSkills ? await skillBins.current() : new Set<string>();
+  const bins = autoAllowSkills ? await skillBins.current() : [];
   let analysisOk = false;
   let allowlistMatches: ExecAllowlistEntry[] = [];
   let allowlistSatisfied = false;

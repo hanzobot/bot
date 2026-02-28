@@ -43,6 +43,8 @@ export type CallGatewayOptions = {
    * Does not affect config loading; callers still control auth via opts.token/password/env/config.
    */
   configPath?: string;
+  /** Optional operator scopes to request for this call. */
+  scopes?: readonly string[];
 };
 
 export type GatewayConnectionDetails = {

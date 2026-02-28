@@ -42,6 +42,7 @@ export function applyAgentBindings(
 ): {
   config: BotConfig;
   added: AgentBinding[];
+  updated: AgentBinding[];
   skipped: AgentBinding[];
   conflicts: Array<{ binding: AgentBinding; existingAgentId: string }>;
 } {
@@ -55,6 +56,7 @@ export function applyAgentBindings(
   }
 
   const added: AgentBinding[] = [];
+  const updated: AgentBinding[] = [];
   const skipped: AgentBinding[] = [];
   const conflicts: Array<{ binding: AgentBinding; existingAgentId: string }> = [];
 
@@ -75,7 +77,7 @@ export function applyAgentBindings(
   }
 
   if (added.length === 0) {
-    return { config: cfg, added, skipped, conflicts };
+    return { config: cfg, added, updated, skipped, conflicts };
   }
 
   return {
@@ -84,8 +86,44 @@ export function applyAgentBindings(
       bindings: [...existing, ...added],
     },
     added,
+    updated,
     skipped,
     conflicts,
+  };
+}
+
+export function removeAgentBindings(
+  cfg: BotConfig,
+  bindings: AgentBinding[],
+): {
+  config: BotConfig;
+  removed: AgentBinding[];
+  missing: AgentBinding[];
+  conflicts: Array<{ binding: AgentBinding; existingAgentId: string }>;
+} {
+  const existing = cfg.bindings ?? [];
+  const keysToRemove = new Set(bindings.map((b) => bindingMatchKey(b.match)));
+  const removed: AgentBinding[] = [];
+  const missing: AgentBinding[] = [];
+
+  for (const binding of bindings) {
+    const key = bindingMatchKey(binding.match);
+    const found = existing.some((e) => bindingMatchKey(e.match) === key);
+    if (found) {
+      removed.push(binding);
+    } else {
+      missing.push(binding);
+    }
+  }
+
+  return {
+    config: {
+      ...cfg,
+      bindings: existing.filter((e) => !keysToRemove.has(bindingMatchKey(e.match))),
+    },
+    removed,
+    missing,
+    conflicts: [],
   };
 }
 

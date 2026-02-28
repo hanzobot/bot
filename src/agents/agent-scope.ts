@@ -72,7 +72,11 @@ export function resolveDefaultAgentId(cfg: BotConfig): string {
   return normalizeAgentId(chosen || DEFAULT_AGENT_ID);
 }
 
-export function resolveSessionAgentIds(params: { sessionKey?: string; config?: BotConfig }): {
+export function resolveSessionAgentIds(params: {
+  sessionKey?: string;
+  config?: BotConfig;
+  agentId?: string;
+}): {
   defaultAgentId: string;
   sessionAgentId: string;
 } {

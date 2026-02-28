@@ -58,6 +58,10 @@ export type ChannelManager = {
   startChannel: (channel: ChannelId, accountId?: string) => Promise<void>;
   stopChannel: (channel: ChannelId, accountId?: string) => Promise<void>;
   markChannelLoggedOut: (channelId: ChannelId, cleared: boolean, accountId?: string) => void;
+  /** Whether the channel was manually stopped (e.g. via user request). */
+  isManuallyStopped?: (channelId: ChannelId, accountId?: string) => boolean;
+  /** Reset restart attempt counters for health monitor. */
+  resetRestartAttempts?: (channelId: ChannelId, accountId?: string) => void;
 };
 
 // Channel docking: lifecycle hooks (`plugin.gateway`) flow through this manager.

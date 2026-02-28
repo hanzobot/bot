@@ -269,3 +269,19 @@ export async function tryWriteCompletionCache(root: string, jsonMode: boolean): 
     defaultRuntime.log(theme.warn(`Completion cache update failed${detail}.`));
   }
 }
+
+/**
+ * Parse a timeout value (string ms or number) from CLI options.
+ * Returns the numeric timeout, or null if parsing failed (caller should exit).
+ * Undefined/empty string inputs return undefined (no timeout).
+ */
+export function parseTimeoutMsOrExit(value?: string | number): number | null | undefined {
+  if (value === undefined || value === "") {
+    return undefined;
+  }
+  const n = typeof value === "number" ? value : Number.parseFloat(String(value));
+  if (!Number.isFinite(n) || n < 0) {
+    return null;
+  }
+  return n;
+}

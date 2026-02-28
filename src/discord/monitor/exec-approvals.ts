@@ -229,7 +229,7 @@ function createExecApprovalRequestContainer(params: {
   accountId: string;
   actionRow?: Row<Button>;
 }): ExecApprovalContainer {
-  const commandText = params.request.request.command;
+  const commandText = params.request.request.command ?? "";
   const commandPreview =
     commandText.length > 1000 ? `${commandText.slice(0, 1000)}...` : commandText;
   const expiresAtSeconds = Math.max(0, Math.floor(params.request.expiresAtMs / 1000));
@@ -254,7 +254,7 @@ function createResolvedContainer(params: {
   cfg: BotConfig;
   accountId: string;
 }): ExecApprovalContainer {
-  const commandText = params.request.request.command;
+  const commandText = params.request.request.command ?? "";
   const commandPreview = commandText.length > 500 ? `${commandText.slice(0, 500)}...` : commandText;
 
   const decisionLabel =
@@ -287,7 +287,7 @@ function createExpiredContainer(params: {
   cfg: BotConfig;
   accountId: string;
 }): ExecApprovalContainer {
-  const commandText = params.request.request.command;
+  const commandText = params.request.request.command ?? "";
   const commandPreview = commandText.length > 500 ? `${commandText.slice(0, 500)}...` : commandText;
 
   return new ExecApprovalContainer({

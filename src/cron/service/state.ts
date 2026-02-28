@@ -1,6 +1,13 @@
 import type { CronConfig } from "../../config/types.cron.js";
 import type { HeartbeatRunResult } from "../../infra/heartbeat-wake.js";
-import type { CronJob, CronJobCreate, CronJobPatch, CronStoreFile } from "../types.js";
+import type {
+  CronDeliveryStatus,
+  CronJob,
+  CronJobCreate,
+  CronJobPatch,
+  CronStoreFile,
+  CronUsageSummary,
+} from "../types.js";
 
 export type CronEvent = {
   jobId: string;
@@ -13,6 +20,12 @@ export type CronEvent = {
   sessionId?: string;
   sessionKey?: string;
   nextRunAtMs?: number;
+  delivered?: boolean;
+  deliveryStatus?: CronDeliveryStatus;
+  deliveryError?: string;
+  model?: string;
+  provider?: string;
+  usage?: CronUsageSummary;
 };
 
 export type Logger = {
@@ -35,9 +48,20 @@ export type CronServiceDeps = {
   resolveSessionStorePath?: (agentId?: string) => string;
   /** Path to the session store (sessions.json) for reaper use. */
   sessionStorePath?: string;
-  enqueueSystemEvent: (text: string, opts?: { agentId?: string; contextKey?: string }) => void;
-  requestHeartbeatNow: (opts?: { reason?: string }) => void;
-  runHeartbeatOnce?: (opts?: { reason?: string; agentId?: string }) => Promise<HeartbeatRunResult>;
+  enqueueSystemEvent: (
+    text: string,
+    opts?: { agentId?: string; contextKey?: string; sessionKey?: string },
+  ) => void;
+  requestHeartbeatNow: (opts?: {
+    reason?: string;
+    agentId?: string;
+    sessionKey?: string | null;
+  }) => void;
+  runHeartbeatOnce?: (opts?: {
+    reason?: string;
+    agentId?: string;
+    sessionKey?: string | null;
+  }) => Promise<HeartbeatRunResult>;
   /**
    * WakeMode=now: max time to wait for runHeartbeatOnce to stop returning
    * { status:"skipped", reason:"requests-in-flight" } before falling back to
@@ -46,7 +70,12 @@ export type CronServiceDeps = {
   wakeNowHeartbeatBusyMaxWaitMs?: number;
   /** WakeMode=now: delay between runHeartbeatOnce retries while busy. */
   wakeNowHeartbeatBusyRetryDelayMs?: number;
-  runIsolatedAgentJob: (params: { job: CronJob; message: string }) => Promise<{
+  runIsolatedAgentJob: (params: {
+    job: CronJob;
+    message: string;
+    abortSignal?: AbortSignal;
+    sessionKey?: string;
+  }) => Promise<{
     status: "ok" | "error" | "skipped";
     summary?: string;
     /** Last non-empty agent text output (not truncated). */

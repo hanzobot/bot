@@ -105,6 +105,7 @@ export async function buildStatusReply(params: {
   command: CommandContext;
   sessionEntry?: SessionEntry;
   sessionKey: string;
+  parentSessionKey?: string;
   sessionScope?: SessionScope;
   storePath?: string;
   provider: string;
@@ -216,7 +217,9 @@ export async function buildStatusReply(params: {
     agent: {
       ...agentDefaults,
       model: {
-        ...agentDefaults.model,
+        ...(typeof agentDefaults.model === "object" && agentDefaults.model !== null
+          ? agentDefaults.model
+          : {}),
         primary: `${provider}/${model}`,
       },
       contextTokens,

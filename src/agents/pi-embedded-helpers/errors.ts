@@ -432,7 +432,7 @@ export function formatRawAssistantErrorForUi(raw?: string): string {
 
 export function formatAssistantErrorText(
   msg: AssistantMessage,
-  opts?: { cfg?: BotConfig; sessionKey?: string; provider?: string },
+  opts?: { cfg?: BotConfig; sessionKey?: string; provider?: string; model?: string },
 ): string | undefined {
   // Also format errors if errorMessage is present, even if stopReason isn't "error"
   const raw = (msg.errorMessage ?? "").trim();
@@ -760,6 +760,33 @@ export function isImageSizeError(errorMessage?: string): boolean {
 
 export function isCloudCodeAssistFormatError(raw: string): boolean {
   return !isImageDimensionErrorMessage(raw) && matchesErrorPatterns(raw, ERROR_PATTERNS.format);
+}
+
+const AUTH_PERMANENT_PATTERNS: readonly ErrorPattern[] = [
+  /invalid[_ ]?api[_ ]?key/,
+  "incorrect api key",
+  "api key has been revoked",
+  "api key has expired",
+  "key is invalid",
+  "key has been deactivated",
+  /\baccount.*(?:deactivated|suspended|disabled)\b/i,
+];
+
+const MODEL_NOT_FOUND_PATTERNS: readonly ErrorPattern[] = [
+  /model.*not found/i,
+  /no such model/i,
+  /model.*does not exist/i,
+  /model.*unavailable/i,
+  "model_not_found",
+  /\bthe model [^\s]+ does not exist/i,
+];
+
+export function isAuthPermanentErrorMessage(raw: string): boolean {
+  return matchesErrorPatterns(raw, AUTH_PERMANENT_PATTERNS);
+}
+
+export function isModelNotFoundErrorMessage(raw: string): boolean {
+  return matchesErrorPatterns(raw, MODEL_NOT_FOUND_PATTERNS);
 }
 
 export function isAuthAssistantError(msg: AssistantMessage | undefined): boolean {

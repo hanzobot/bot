@@ -7,6 +7,8 @@ import type { DiscordChannelInfo } from "./message-utils.js";
 import type { DiscordSenderIdentity } from "./sender-identity.js";
 
 export type { DiscordSenderIdentity } from "./sender-identity.js";
+import type { SessionBindingRecord } from "../../infra/outbound/session-binding-service.js";
+import type { ThreadBindingManager } from "./thread-bindings.types.js";
 import type { DiscordThreadChannel } from "./threading.js";
 
 export type LoadedConfig = ReturnType<typeof import("../../config/config.js").loadConfig>;
@@ -65,6 +67,11 @@ export type DiscordMessagePreflightContext = {
   displayChannelSlug: string;
 
   baseSessionKey: string;
+  boundSessionKey?: string;
+  boundAgentId?: string;
+  threadBinding?: SessionBindingRecord;
+  threadBindings?: ThreadBindingManager;
+  discordRestFetch?: typeof fetch;
   channelConfig: DiscordChannelConfigResolved | null;
   channelAllowlistConfigured: boolean;
   channelAllowed: boolean;
@@ -100,4 +107,6 @@ export type DiscordMessagePreflightParams = {
   groupPolicy: DiscordMessagePreflightContext["groupPolicy"];
   data: DiscordMessageEvent;
   client: Client;
+  threadBindings?: ThreadBindingManager;
+  discordRestFetch?: typeof fetch;
 };

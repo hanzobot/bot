@@ -35,7 +35,7 @@ export type ParsedHookFrontmatter = Record<string, string>;
 export type Hook = {
   name: string;
   description: string;
-  source: "bot-bundled" | "bot-managed" | "bot-workspace" | "bot-plugin";
+  source: "bot-bundled" | "bot-managed" | "bot-workspace" | "bot-plugin" | "hanzo-bot-bundled";
   pluginId?: string;
   filePath: string; // Path to HOOK.md
   baseDir: string; // Directory containing hook

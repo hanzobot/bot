@@ -22,7 +22,12 @@ function applySkillConfigEnvOverrides(params: {
     }
   }
 
-  if (primaryEnv && skillConfig.apiKey && !process.env[primaryEnv]) {
+  if (
+    primaryEnv &&
+    typeof skillConfig.apiKey === "string" &&
+    skillConfig.apiKey &&
+    !process.env[primaryEnv]
+  ) {
     updates.push({ key: primaryEnv, prev: process.env[primaryEnv] });
     process.env[primaryEnv] = skillConfig.apiKey;
   }

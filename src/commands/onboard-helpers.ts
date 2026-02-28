@@ -32,7 +32,7 @@ export function guardCancel<T>(value: T | symbol, runtime: RuntimeEnv): T {
     cancel(stylePromptTitle("Setup cancelled.") ?? "Setup cancelled.");
     runtime.exit(0);
   }
-  return value;
+  return value as T;
 }
 
 export function summarizeExistingConfig(config: BotConfig): string {

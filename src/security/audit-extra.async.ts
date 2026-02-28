@@ -721,6 +721,14 @@ export async function collectPluginsCodeSafetyFindings(params: {
   return findings;
 }
 
+export async function collectSandboxBrowserHashLabelFindings(params: {
+  cfg: BotConfig;
+  stateDir?: string;
+}): Promise<SecurityAuditFinding[]> {
+  void params;
+  return [];
+}
+
 export async function collectInstalledSkillsCodeSafetyFindings(params: {
   cfg: BotConfig;
   stateDir: string;

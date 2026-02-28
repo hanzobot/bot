@@ -2,8 +2,8 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { getPairingAdapter } from "../channels/plugins/pairing.js";
 import type { ChannelId, ChannelPairingAdapter } from "../channels/plugins/types.js";
+import { getPairingAdapter } from "../channels/plugins/pairing.js";
 import { resolveOAuthDir, resolveStateDir } from "../config/paths.js";
 import { withFileLock as withPathLock } from "../infra/file-lock.js";
 import { resolveRequiredHomeDir } from "../infra/home-dir.js";
@@ -395,7 +395,7 @@ export async function readLegacyChannelAllowFromStore(
 export async function readChannelAllowFromStore(
   channel: PairingChannel,
   env: NodeJS.ProcessEnv = process.env,
-  accountId: string,
+  accountId: string = DEFAULT_ACCOUNT_ID,
 ): Promise<string[]> {
   const normalizedAccountId = accountId.trim().toLowerCase();
   const resolvedAccountId = normalizedAccountId || DEFAULT_ACCOUNT_ID;
@@ -548,7 +548,7 @@ export async function listChannelPairingRequests(
 export async function upsertChannelPairingRequest(params: {
   channel: PairingChannel;
   id: string | number;
-  accountId: string;
+  accountId?: string;
   meta?: Record<string, string | undefined | null>;
   env?: NodeJS.ProcessEnv;
   /** Extension channels can pass their adapter directly to bypass registry lookup. */

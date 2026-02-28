@@ -2,6 +2,25 @@ import process from "node:process";
 import type { TelegramNetworkConfig } from "../config/types.telegram.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 
+export type TelegramDnsResultOrderDecision = {
+  value: string | null;
+  source?: string;
+};
+
+export function resolveTelegramDnsResultOrderDecision(params?: {
+  network?: TelegramNetworkConfig;
+  env?: NodeJS.ProcessEnv;
+}): TelegramDnsResultOrderDecision {
+  const network = params?.network;
+  if (typeof (network as { dnsResultOrder?: string } | undefined)?.dnsResultOrder === "string") {
+    return {
+      value: (network as { dnsResultOrder?: string }).dnsResultOrder ?? null,
+      source: "config",
+    };
+  }
+  return { value: null };
+}
+
 export const TELEGRAM_DISABLE_AUTO_SELECT_FAMILY_ENV = "BOT_TELEGRAM_DISABLE_AUTO_SELECT_FAMILY";
 export const TELEGRAM_ENABLE_AUTO_SELECT_FAMILY_ENV = "BOT_TELEGRAM_ENABLE_AUTO_SELECT_FAMILY";
 

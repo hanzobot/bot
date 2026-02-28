@@ -164,6 +164,14 @@ export type SlackAccountConfig = {
    * Slack uses shortcodes (e.g., "eyes") rather than unicode emoji.
    */
   ackReaction?: string;
+  /** Enable streaming replies (progressive text updates). Default: false. */
+  streaming?: boolean;
+  /** Use native Slack streaming (requires compatible API). Default: false. */
+  nativeStreaming?: boolean;
+  /** Allow username-based matching in allow lists. Default: false. */
+  allowNameMatching?: boolean;
+  /** DANGEROUS: allow username-based matching in allow lists (bypasses ID-only enforcement). */
+  dangerouslyAllowNameMatching?: boolean;
 };
 
 export type SlackConfig = {

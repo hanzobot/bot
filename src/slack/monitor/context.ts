@@ -84,6 +84,8 @@ export type SlackMonitorContext = {
   ackReactionScope: string;
   mediaMaxBytes: number;
   removeAckAfterReply: boolean;
+  /** Allow username-based matching in allow lists (in addition to user IDs). */
+  allowNameMatching?: boolean;
 
   logger: ReturnType<typeof getChildLogger>;
   markMessageSeen: (channelId: string | undefined, ts?: string) => boolean;
@@ -145,6 +147,7 @@ export function createSlackMonitorContext(params: {
   ackReactionScope: string;
   mediaMaxBytes: number;
   removeAckAfterReply: boolean;
+  allowNameMatching?: boolean;
 }): SlackMonitorContext {
   const channelHistories = new Map<string, HistoryEntry[]>();
   const logger = getChildLogger({ module: "slack-auto-reply" });
@@ -415,5 +418,6 @@ export function createSlackMonitorContext(params: {
     resolveChannelName,
     resolveUserName,
     setSlackThreadStatus,
+    allowNameMatching: params.allowNameMatching,
   };
 }

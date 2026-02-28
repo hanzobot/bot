@@ -58,6 +58,10 @@ export function resolveSessionDeliveryTarget(params: {
   fallbackChannel?: DeliverableMessageChannel;
   allowMismatchedLastTo?: boolean;
   mode?: ChannelOutboundTargetMode;
+  turnSourceChannel?: DeliverableMessageChannel | null;
+  turnSourceTo?: string | null;
+  turnSourceAccountId?: string | null;
+  turnSourceThreadId?: string | number | null;
 }): SessionDeliveryTarget {
   const context = deliveryContextFromSession(params.entry);
   const lastChannel =

@@ -86,6 +86,43 @@ export function applyAccountNameToChannelSection(params: {
   } as BotConfig;
 }
 
+/**
+ * Moves top-level channel config keys (excluding `accounts`) into
+ * `accounts.default` so that account-keyed storage can be used consistently.
+ * Used when onboarding a new account into a channel that previously only had
+ * a single (implicit default) account at the root level.
+ */
+export function moveSingleAccountChannelSectionToDefaultAccount(params: {
+  cfg: BotConfig;
+  channelKey: string;
+}): BotConfig {
+  const channels = params.cfg.channels as Record<string, unknown> | undefined;
+  const base = channels?.[params.channelKey] as Record<string, unknown> | undefined;
+  if (!base) {
+    return params.cfg;
+  }
+  const { accounts, ...rootFields } = base;
+  const existingAccounts = (accounts as Record<string, Record<string, unknown>> | undefined) ?? {};
+  if (Object.keys(existingAccounts).length > 0) {
+    // Already has multi-account structure; no migration needed.
+    return params.cfg;
+  }
+  if (Object.keys(rootFields).length === 0) {
+    return params.cfg;
+  }
+  return {
+    ...params.cfg,
+    channels: {
+      ...params.cfg.channels,
+      [params.channelKey]: {
+        accounts: {
+          [DEFAULT_ACCOUNT_ID]: rootFields,
+        },
+      },
+    },
+  } as BotConfig;
+}
+
 export function migrateBaseNameToDefaultAccount(params: {
   cfg: BotConfig;
   channelKey: string;

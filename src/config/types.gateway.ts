@@ -46,7 +46,20 @@ export type CanvasHostConfig = {
   liveReload?: boolean;
 };
 
+export type TalkProviderConfig = {
+  voiceId?: string;
+  voiceAliases?: Record<string, string>;
+  modelId?: string;
+  outputFormat?: string;
+  apiKey?: string;
+  [key: string]: unknown;
+};
+
 export type TalkConfig = {
+  /** Active provider name (e.g. "elevenlabs"). */
+  provider?: string;
+  /** Per-provider configuration map. */
+  providers?: Record<string, TalkProviderConfig>;
   /** Default ElevenLabs voice ID for Talk mode. */
   voiceId?: string;
   /** Optional voice name -> ElevenLabs voice ID map. */
@@ -72,6 +85,10 @@ export type GatewayControlUiConfig = {
   allowedOrigins?: string[];
   /** Allow token-only auth over insecure HTTP (default: false). */
   allowInsecureAuth?: boolean;
+  /** DANGEROUS: disable device authentication for all WS connections. */
+  dangerouslyDisableDeviceAuth?: boolean;
+  /** DANGEROUS: allow HTTP Host header to be used as the CORS origin fallback. */
+  dangerouslyAllowHostHeaderOriginFallback?: boolean;
 };
 
 export type GatewayAuthMode = "token" | "password" | "trusted-proxy" | "iam";

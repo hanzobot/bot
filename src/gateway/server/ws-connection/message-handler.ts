@@ -81,6 +81,8 @@ export function attachGatewayWsMessageHandler(params: {
   resolvedAuth: ResolvedGatewayAuth;
   /** Optional rate limiter for auth brute-force protection. */
   rateLimiter?: AuthRateLimiter;
+  /** Browser-origin fallback limiter (loopback is never exempt). */
+  browserRateLimiter?: AuthRateLimiter;
   gatewayMethods: string[];
   events: string[];
   extraHandlers: GatewayRequestHandlers;

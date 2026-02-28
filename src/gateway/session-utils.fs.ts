@@ -197,6 +197,41 @@ export function archiveSessionTranscripts(opts: {
   return archived;
 }
 
+export async function cleanupArchivedSessionTranscripts(opts: {
+  directories: string[];
+  olderThanMs?: number;
+  reason?: "reset" | "deleted";
+  nowMs?: number;
+}): Promise<void> {
+  const { directories, olderThanMs, reason, nowMs } = opts;
+  void reason;
+  if (!olderThanMs || olderThanMs <= 0) {
+    return;
+  }
+  const cutoff = (nowMs ?? Date.now()) - olderThanMs;
+  for (const dir of directories) {
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isFile()) {
+          continue;
+        }
+        const filePath = path.join(dir, entry.name);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.mtimeMs < cutoff) {
+            fs.unlinkSync(filePath);
+          }
+        } catch {
+          // Best-effort.
+        }
+      }
+    } catch {
+      // Best-effort.
+    }
+  }
+}
+
 function jsonUtf8Bytes(value: unknown): number {
   try {
     return Buffer.byteLength(JSON.stringify(value), "utf8");

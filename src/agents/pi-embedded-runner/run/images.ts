@@ -1,12 +1,12 @@
+import type { ImageContent } from "@mariozechner/pi-ai";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ImageContent } from "@mariozechner/pi-ai";
+import type { ImageSanitizationLimits } from "../../image-sanitization.js";
+import type { SandboxFsBridge } from "../../sandbox/fs-bridge.js";
 import { resolveUserPath } from "../../../utils.js";
 import { loadWebMedia } from "../../../web/media.js";
-import type { ImageSanitizationLimits } from "../../image-sanitization.js";
 import { resolveSandboxedBridgeMediaPath } from "../../sandbox-media-paths.js";
 import { assertSandboxPath } from "../../sandbox-paths.js";
-import type { SandboxFsBridge } from "../../sandbox/fs-bridge.js";
 import { sanitizeImageBlocks } from "../../tool-images.js";
 import { log } from "../logger.js";
 
@@ -289,13 +289,18 @@ export async function detectAndLoadPromptImages(params: {
   maxDimensionPx?: number;
   workspaceOnly?: boolean;
   sandbox?: { root: string; bridge: SandboxFsBridge };
+  /** Optional history messages to scan for image references in prior turns. */
+  historyMessages?: unknown[];
 }): Promise<{
   /** Images for the current prompt (existingImages + detected in current prompt) */
   images: ImageContent[];
   detectedRefs: DetectedImageRef[];
   loadedCount: number;
   skippedCount: number;
+  /** Map of message index -> images loaded from history (empty when not processed). */
+  historyImagesByIndex: Map<number, ImageContent[]>;
 }> {
+  const emptyHistoryMap = new Map<number, ImageContent[]>();
   // If model doesn't support images, return empty results
   if (!modelSupportsImages(params.model)) {
     return {
@@ -303,6 +308,7 @@ export async function detectAndLoadPromptImages(params: {
       detectedRefs: [],
       loadedCount: 0,
       skippedCount: 0,
+      historyImagesByIndex: emptyHistoryMap,
     };
   }
 
@@ -315,6 +321,7 @@ export async function detectAndLoadPromptImages(params: {
       detectedRefs: [],
       loadedCount: 0,
       skippedCount: 0,
+      historyImagesByIndex: emptyHistoryMap,
     };
   }
 
@@ -354,5 +361,6 @@ export async function detectAndLoadPromptImages(params: {
     detectedRefs: allRefs,
     loadedCount,
     skippedCount,
+    historyImagesByIndex: emptyHistoryMap,
   };
 }

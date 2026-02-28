@@ -457,7 +457,12 @@ export function applyCustomApiConfig(params: ApplyCustomApiConfigParams): Custom
   const mergedModels = hasModel ? existingModels : [...existingModels, nextModel];
   const { apiKey: existingApiKey, ...existingProviderRest } = existingProvider ?? {};
   const normalizedApiKey =
-    params.apiKey?.trim() || (existingApiKey ? existingApiKey.trim() : undefined);
+    params.apiKey?.trim() ||
+    (existingApiKey
+      ? typeof existingApiKey === "string"
+        ? existingApiKey.trim()
+        : existingApiKey.id
+      : undefined);
 
   let config: BotConfig = {
     ...params.config,

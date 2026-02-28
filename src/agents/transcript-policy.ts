@@ -1,6 +1,6 @@
+import type { ToolCallIdMode } from "./tool-call-id.js";
 import { normalizeProviderId } from "./model-selection.js";
 import { isGoogleModelApi } from "./pi-embedded-helpers/google.js";
-import type { ToolCallIdMode } from "./tool-call-id.js";
 
 export type TranscriptSanitizeMode = "full" | "images-only";
 
@@ -20,6 +20,7 @@ export type TranscriptPolicy = {
   validateGeminiTurns: boolean;
   validateAnthropicTurns: boolean;
   allowSyntheticToolResults: boolean;
+  normalizeAntigravityThinkingBlocks?: boolean;
 };
 
 const MISTRAL_MODEL_HINTS = [

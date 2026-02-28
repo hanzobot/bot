@@ -1117,6 +1117,21 @@ export async function readConfigFileSnapshotForWrite(): Promise<ReadConfigFileSn
   return await createConfigIO().readConfigFileSnapshotForWrite();
 }
 
+/** In-memory runtime config snapshot (set by secrets runtime). */
+let runtimeConfigSnapshot: { config: BotConfig; sourceConfig: BotConfig } | null = null;
+
+export function setRuntimeConfigSnapshot(config: BotConfig, sourceConfig: BotConfig): void {
+  runtimeConfigSnapshot = { config, sourceConfig };
+}
+
+export function getRuntimeConfigSnapshot(): { config: BotConfig; sourceConfig: BotConfig } | null {
+  return runtimeConfigSnapshot;
+}
+
+export function clearRuntimeConfigSnapshot(): void {
+  runtimeConfigSnapshot = null;
+}
+
 export async function writeConfigFile(
   cfg: BotConfig,
   options: ConfigWriteOptions = {},

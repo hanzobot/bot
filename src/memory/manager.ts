@@ -25,9 +25,9 @@ import {
 } from "./embeddings.js";
 import { bm25RankToScore, buildFtsQuery, mergeHybridResults } from "./hybrid.js";
 import { isMemoryPath, normalizeExtraMemoryPaths } from "./internal.js";
-import { memoryManagerEmbeddingOps } from "./manager-embedding-ops.js";
+import { MemoryManagerEmbeddingOps as memoryManagerEmbeddingOps } from "./manager-embedding-ops.js";
 import { searchKeyword, searchVector } from "./manager-search.js";
-import { memoryManagerSyncOps } from "./manager-sync-ops.js";
+import { MemoryManagerSyncOps as memoryManagerSyncOps } from "./manager-sync-ops.js";
 const SNIPPET_MAX_CHARS = 700;
 const VECTOR_TABLE = "chunks_vec";
 const FTS_TABLE = "chunks_fts";
@@ -47,8 +47,8 @@ export class MemoryIndexManager implements MemorySearchManager {
   private readonly workspaceDir: string;
   private readonly settings: ResolvedMemorySearchConfig;
   private provider: EmbeddingProvider;
-  private readonly requestedProvider: "openai" | "local" | "gemini" | "voyage" | "auto";
-  private fallbackFrom?: "openai" | "local" | "gemini" | "voyage";
+  private readonly requestedProvider: "openai" | "local" | "gemini" | "voyage" | "mistral" | "auto";
+  private fallbackFrom?: "openai" | "local" | "gemini" | "voyage" | "mistral";
   private fallbackReason?: string;
   private openAi?: OpenAiEmbeddingClient;
   private gemini?: GeminiEmbeddingClient;
@@ -239,7 +239,7 @@ export class MemoryIndexManager implements MemorySearchManager {
       return vectorResults.filter((entry) => entry.score >= minScore).slice(0, maxResults);
     }
 
-    const merged = this.mergeHybridResults({
+    const merged = await this.mergeHybridResults({
       vector: vectorResults,
       keyword: keywordResults,
       vectorWeight: hybrid.vectorWeight,
@@ -293,13 +293,13 @@ export class MemoryIndexManager implements MemorySearchManager {
     return results.map((entry) => entry as MemorySearchResult & { id: string; textScore: number });
   }
 
-  private mergeHybridResults(params: {
+  private async mergeHybridResults(params: {
     vector: Array<MemorySearchResult & { id: string }>;
     keyword: Array<MemorySearchResult & { id: string; textScore: number }>;
     vectorWeight: number;
     textWeight: number;
-  }): MemorySearchResult[] {
-    const merged = mergeHybridResults({
+  }): Promise<MemorySearchResult[]> {
+    const merged = await mergeHybridResults({
       vector: params.vector.map((r) => ({
         id: r.id,
         path: r.path,
