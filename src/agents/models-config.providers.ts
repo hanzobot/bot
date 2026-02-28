@@ -85,6 +85,17 @@ const XIAOMI_DEFAULT_COST = {
   cacheWrite: 0,
 };
 
+const DIGITALOCEAN_BASE_URL = "https://inference.do-ai.run/v1";
+const DIGITALOCEAN_DEFAULT_MODEL_ID = "claude-sonnet-4-6";
+const DIGITALOCEAN_DEFAULT_CONTEXT_WINDOW = 1000000;
+const DIGITALOCEAN_DEFAULT_MAX_TOKENS = 16384;
+const DIGITALOCEAN_DEFAULT_COST = {
+  input: 3.6,
+  output: 18,
+  cacheRead: 0.36,
+  cacheWrite: 4.5,
+};
+
 const FIREWORKS_BASE_URL = "https://api.fireworks.ai/inference/v1";
 const FIREWORKS_DEFAULT_MODEL_ID = "accounts/fireworks/models/kimi-k2p5";
 const FIREWORKS_DEFAULT_CONTEXT_WINDOW = 131072;
@@ -472,6 +483,24 @@ function buildMinimaxPortalProvider(): ProviderConfig {
         name: "MiniMax M2.5",
         reasoning: true,
       }),
+    ],
+  };
+}
+
+function buildDigitalOceanProvider(): ProviderConfig {
+  return {
+    baseUrl: DIGITALOCEAN_BASE_URL,
+    api: "openai-completions",
+    models: [
+      {
+        id: DIGITALOCEAN_DEFAULT_MODEL_ID,
+        name: "Claude Sonnet 4.6 (DigitalOcean)",
+        reasoning: true,
+        input: ["text", "image"],
+        cost: DIGITALOCEAN_DEFAULT_COST,
+        contextWindow: DIGITALOCEAN_DEFAULT_CONTEXT_WINDOW,
+        maxTokens: DIGITALOCEAN_DEFAULT_MAX_TOKENS,
+      },
     ],
   };
 }
@@ -1022,6 +1051,15 @@ export async function resolveImplicitProviders(params: {
     resolveApiKeyFromProfiles({ provider: "nvidia", store: authStore });
   if (nvidiaKey) {
     providers.nvidia = { ...buildNvidiaProvider(), apiKey: nvidiaKey };
+  }
+
+  // DigitalOcean GenAI — direct access for self-hosted (Claude Sonnet 4.6).
+  // Auto-registers when DIGITALOCEAN_ACCESS_TOKEN or GRADIENT_MODEL_ACCESS_KEY is set.
+  const digitaloceanKey =
+    resolveEnvApiKeyVarName("digitalocean") ??
+    resolveApiKeyFromProfiles({ provider: "digitalocean", store: authStore });
+  if (digitaloceanKey) {
+    providers.digitalocean = { ...buildDigitalOceanProvider(), apiKey: digitaloceanKey };
   }
 
   // Hanzo Cloud provider — routes through api.hanzo.ai with IAM JWT auth.

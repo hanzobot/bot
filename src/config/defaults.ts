@@ -22,7 +22,8 @@ const DEFAULT_MODEL_ALIASES: Readonly<Record<string, string>> = {
 
   // Anthropic
   opus: "anthropic/claude-opus-4-6",
-  sonnet: "anthropic/claude-sonnet-4-5",
+  sonnet: "anthropic/claude-sonnet-4-6",
+  "sonnet-4.6": "hanzo/claude-sonnet-4-6",
 
   // OpenAI
   gpt: "openai/gpt-5.2",

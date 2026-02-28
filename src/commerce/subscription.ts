@@ -76,10 +76,14 @@ export async function checkSubscription(userId: string): Promise<SubscriptionInf
       }),
     ]);
 
+    const VALID_TIERS = new Set<string>(["developer", "pro", "team", "enterprise"]);
     let tier: PlanTier = "developer";
     if (subRes.ok) {
       const sub = await subRes.json();
-      tier = (sub.planId || sub.plan || "developer") as PlanTier;
+      const rawTier = String(sub.planId || sub.plan || "developer")
+        .toLowerCase()
+        .trim();
+      tier = VALID_TIERS.has(rawTier) ? (rawTier as PlanTier) : "developer";
     }
 
     let credits = 0;

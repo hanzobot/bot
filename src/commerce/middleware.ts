@@ -18,7 +18,8 @@
 
 import { reportUsage } from "./metering.js";
 import { checkRateLimit, type RateLimitResult } from "./rate-limiter.js";
-import { checkSubscription, type SubscriptionInfo } from "./subscription.js";
+import { checkSubscription, type SubscriptionInfo, type PlanTier } from "./subscription.js";
+import { shouldUpgradeModel } from "./tier-model.js";
 import { getUpgradePrompt, formatForChannel } from "./upgrade-prompt.js";
 
 export interface AgentContext {
@@ -27,6 +28,8 @@ export interface AgentContext {
   channel: string;
   model: string;
   message: string;
+  /** Subscription tier resolved by middleware — passed to gateway for backend routing. */
+  tier?: PlanTier;
 }
 
 export interface AgentResult {
@@ -68,7 +71,15 @@ export function withSubscriptionCheck(handler: AgentHandler): AgentHandler {
       };
     }
 
-    // 3. Check rate limit
+    // 3. Tier-based model upgrade: zen4 (free) → zen4-pro (paid)
+    const upgrade = shouldUpgradeModel({ tier: sub.tier, currentModel: ctx.model });
+    if (upgrade) {
+      ctx = { ...ctx, model: `${upgrade.provider}/${upgrade.model}`, tier: sub.tier };
+    } else {
+      ctx = { ...ctx, tier: sub.tier };
+    }
+
+    // 4. Check rate limit
     const rateResult: RateLimitResult = checkRateLimit(ctx.userId, sub.limits);
     if (!rateResult.allowed) {
       const reason = rateResult.reason === "token_limit" ? "token_limit" : "rate_limit";
@@ -81,10 +92,10 @@ export function withSubscriptionCheck(handler: AgentHandler): AgentHandler {
       };
     }
 
-    // 4. Execute agent
+    // 5. Execute agent
     const result = await handler(ctx);
 
-    // 5. Report usage (non-blocking)
+    // 6. Report usage (non-blocking)
     reportUsage({
       userId: ctx.userId,
       botId: ctx.botId,

@@ -11,6 +11,7 @@
  * always allows the request.
  */
 
+import type { PlanTier } from "../../commerce/subscription.js";
 import type { GatewayIamConfig } from "../../config/config.js";
 import type { NodeBillingMode } from "../../config/types.gateway.js";
 import type { TenantContext } from "../tenant-context.js";
@@ -21,7 +22,7 @@ import {
 } from "./iam-billing-client.js";
 
 export type BillingGateResult =
-  | { allowed: true }
+  | { allowed: true; tier?: PlanTier }
   | { allowed: false; reason: string; status: SubscriptionStatus };
 
 /** Built-in super admin emails that always bypass billing. */
@@ -117,14 +118,17 @@ export async function checkBillingAllowance(params: {
     const userId = params.tenant.userId || params.tenant.orgId;
     const available = await getBalance(params.iamConfig, userId, params.token);
 
+    // Resolve subscription tier for downstream model routing.
+    const status = await getSubscriptionStatus(params.iamConfig, params.tenant, params.token);
+    const tier = resolveTierFromStatus(status);
+
     if (available > 0) {
-      return { allowed: true };
+      return { allowed: true, tier };
     }
 
     // No balance — check subscription as fallback (some plans may not require prepaid)
-    const status = await getSubscriptionStatus(params.iamConfig, params.tenant, params.token);
     if (status.active) {
-      return { allowed: true };
+      return { allowed: true, tier };
     }
 
     return {
@@ -150,4 +154,26 @@ export async function checkBillingAllowance(params: {
       status: { active: false, subscription: null, plan: null },
     };
   }
+}
+
+/** Known plan slugs → tier mapping. */
+const PLAN_SLUG_TO_TIER: Record<string, PlanTier> = {
+  enterprise: "enterprise",
+  "enterprise-annual": "enterprise",
+  team: "team",
+  "team-annual": "team",
+  pro: "pro",
+  "pro-annual": "pro",
+  developer: "developer",
+};
+
+/**
+ * Map a SubscriptionStatus to a PlanTier for downstream model routing.
+ */
+function resolveTierFromStatus(status: SubscriptionStatus): PlanTier {
+  if (!status.active || !status.subscription) {
+    return "developer";
+  }
+  const planId = (status.subscription.planId ?? status.plan?.slug ?? "").toLowerCase().trim();
+  return PLAN_SLUG_TO_TIER[planId] ?? "developer";
 }
