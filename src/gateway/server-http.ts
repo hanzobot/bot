@@ -541,20 +541,22 @@ export function createGatewayHttpServer(opts: {
         // Security headers: prevent token leaks, clickjacking, MIME sniffing.
         res.setHeader("Referrer-Policy", "no-referrer");
         res.setHeader("X-Content-Type-Options", "nosniff");
-        res.setHeader("X-Frame-Options", "DENY");
+        // Do NOT set X-Frame-Options — it conflicts with frame-ancestors CSP and
+        // blocks embedding from app.hanzo.bot.
         res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
         res.setHeader("Cache-Control", "no-store");
         res.setHeader(
           "Content-Security-Policy",
           [
             "default-src 'none'",
-            `script-src 'nonce-${cspNonce}' https://esm.sh`,
+            `script-src 'nonce-${cspNonce}' https://esm.sh https://cdn.esm.sh`,
             `style-src 'nonce-${cspNonce}'`,
             `connect-src wss://${req.headers.host ?? "*"} ws://localhost:*`,
-            "frame-ancestors 'none'",
+            "frame-ancestors 'self' https://app.hanzo.bot https://*.hanzo.bot https://*.hanzo.ai",
           ].join("; "),
         );
-        res.end(vncViewerHtml(origin, nodeId, token, cspNonce));
+        const vncPw = process.env.BOT_BROWSER_NOVNC_PASSWORD?.trim() || undefined;
+        res.end(vncViewerHtml(origin, nodeId, token, cspNonce, vncPw));
         return;
       }
 

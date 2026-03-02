@@ -309,6 +309,7 @@ export function vncViewerHtml(
   nodeId?: string,
   token?: string,
   nonce?: string,
+  vncPassword?: string,
 ): string {
   const base = gatewayOrigin.replace(/^http/, "ws") + "/vnc";
   const params = new URLSearchParams();
@@ -330,25 +331,115 @@ export function vncViewerHtml(
   <title>Hanzo Bot — Remote Desktop</title>
   <style${nonceAttr}>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; font-family: system-ui, -apple-system, sans-serif; }
     #status { position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,.75); color: #0f0; font: 13px/1.4 monospace;
-      padding: 6px 16px; border-radius: 6px; z-index: 100; }
+      background: rgba(0,0,0,.85); color: #4ade80; font: 13px/1.4 monospace;
+      padding: 6px 16px; border-radius: 6px; z-index: 100; transition: opacity .3s; }
+    #status.error { color: #f87171; }
     #screen { width: 100%; height: 100%; }
+    .vnc-overlay { position: fixed; inset: 0; display: flex; align-items: center;
+      justify-content: center; background: rgba(0,0,0,.85); z-index: 200; }
+    .vnc-form { background: #111; padding: 28px; border-radius: 12px; border: 1px solid #333;
+      display: flex; flex-direction: column; gap: 14px; min-width: 300px; }
+    .vnc-form h3 { color: #fff; font-size: 15px; font-weight: 600; margin: 0; }
+    .vnc-form p { color: #888; font-size: 12px; margin: 0; line-height: 1.5; }
+    .vnc-form input { padding: 10px 14px; border-radius: 8px; border: 1px solid #333;
+      background: #0a0a0a; color: #fff; font: 14px monospace; outline: none;
+      transition: border-color .2s; }
+    .vnc-form input:focus { border-color: #4ade80; }
+    .vnc-form button { padding: 10px 20px; border-radius: 8px; border: none;
+      background: #fff; color: #000; font: 13px/1.4 system-ui; cursor: pointer;
+      font-weight: 600; transition: opacity .2s; }
+    .vnc-form button:hover { opacity: .85; }
   </style>
 </head>
 <body>
-  <div id="status">Connecting…</div>
+  <div id="status">Connecting\u2026</div>
   <div id="screen"></div>
   <script type="module"${nonceAttr}>
-    import RFB from "https://esm.sh/@novnc/novnc@1.5.0/lib/rfb.js";
+    const WS_URL = "${wsUrl}";
+    const _vncPw = ${vncPassword ? `"${vncPassword}"` : "null"};
     const status = document.getElementById("status");
-    const rfb = new RFB(document.getElementById("screen"), "${wsUrl}");
-    rfb.scaleViewport = true;
-    rfb.resizeSession = true;
-    rfb.addEventListener("connect", () => { status.textContent = "Connected"; setTimeout(() => status.style.opacity = "0", 2000); });
-    rfb.addEventListener("disconnect", (e) => { status.style.opacity = "1"; status.textContent = e.detail.clean ? "Disconnected" : "Connection lost"; });
-    rfb.addEventListener("credentialsrequired", () => { status.textContent = "VNC password required"; const pw = prompt("VNC password:"); if (pw) rfb.sendCredentials({ password: pw }); });
+    const screenEl = document.getElementById("screen");
+    let rfb = null;
+    let savedPw = _vncPw || new URLSearchParams(location.search).get("password") || "";
+
+    async function loadRFB() {
+      try {
+        const mod = await import("https://esm.sh/@novnc/novnc@1.5.0/lib/rfb.js");
+        return mod.default ?? mod.RFB ?? mod;
+      } catch (e1) {
+        try {
+          const mod = await import("https://cdn.jsdelivr.net/npm/@novnc/novnc@1.5.0/lib/rfb.js");
+          return mod.default ?? mod.RFB ?? mod;
+        } catch (e2) {
+          throw new Error("Failed to load noVNC from CDN: " + e1.message);
+        }
+      }
+    }
+
+    function showPasswordForm() {
+      status.textContent = "VNC password required";
+      const overlay = document.createElement("div");
+      overlay.className = "vnc-overlay";
+      overlay.innerHTML = '<form class="vnc-form">'
+        + '<h3>Remote Desktop</h3>'
+        + '<p>Enter the VNC password for this machine.<br/>On macOS: System Settings \\u2192 Sharing \\u2192 Screen Sharing \\u2192 Computer Settings \\u2192 VNC password.</p>'
+        + '<input type="password" autofocus placeholder="VNC password" />'
+        + '<button type="submit">Connect</button>'
+        + '</form>';
+      document.body.appendChild(overlay);
+      overlay.querySelector("form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const v = overlay.querySelector("input").value;
+        if (v && rfb) {
+          savedPw = v;
+          rfb.sendCredentials({ password: v });
+          overlay.remove();
+        }
+      });
+    }
+
+    async function connect() {
+      status.style.opacity = "1";
+      status.className = "";
+      status.textContent = "Connecting\\u2026";
+      screenEl.innerHTML = "";
+
+      const RFB = await loadRFB();
+      rfb = new RFB(screenEl, WS_URL);
+      rfb.scaleViewport = true;
+      rfb.resizeSession = true;
+
+      rfb.addEventListener("connect", () => {
+        status.textContent = "Connected";
+        setTimeout(() => { status.style.opacity = "0"; }, 2000);
+      });
+
+      rfb.addEventListener("disconnect", (e) => {
+        status.style.opacity = "1";
+        if (e.detail.clean) {
+          status.textContent = "Disconnected";
+        } else {
+          status.className = "error";
+          status.textContent = "Connection lost \\u2014 retrying in 3s\\u2026";
+          setTimeout(connect, 3000);
+        }
+      });
+
+      rfb.addEventListener("credentialsrequired", () => {
+        if (savedPw) {
+          rfb.sendCredentials({ password: savedPw });
+          return;
+        }
+        showPasswordForm();
+      });
+    }
+
+    connect().catch((err) => {
+      status.className = "error";
+      status.textContent = "Error: " + err.message;
+    });
   </script>
 </body>
 </html>`;
