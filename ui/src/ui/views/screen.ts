@@ -10,6 +10,7 @@ export type ScreenProps = {
   connected: boolean;
   gatewayUrl: string;
   token: string;
+  vncPassword?: string;
   nodes: ScreenNode[];
   selectedNodeId: string | null;
   onSelectNode: (nodeId: string | null) => void;
@@ -20,7 +21,12 @@ export type ScreenProps = {
  * Converts ws:// → http:// or wss:// → https:// and appends /vnc-viewer.
  * Adds token and optional nodeId query parameters.
  */
-function resolveVncViewerUrl(gatewayUrl: string, token: string, nodeId: string | null): string {
+function resolveVncViewerUrl(
+  gatewayUrl: string,
+  token: string,
+  nodeId: string | null,
+  vncPassword?: string,
+): string {
   const trimmed = gatewayUrl.trim();
   let base: string;
   if (!trimmed) {
@@ -36,6 +42,9 @@ function resolveVncViewerUrl(gatewayUrl: string, token: string, nodeId: string |
   if (nodeId) {
     params.set("nodeId", nodeId);
   }
+  if (vncPassword) {
+    params.set("password", vncPassword);
+  }
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 }
@@ -49,7 +58,12 @@ export function renderScreen(props: ScreenProps) {
     `;
   }
 
-  const viewerUrl = resolveVncViewerUrl(props.gatewayUrl, props.token, props.selectedNodeId);
+  const viewerUrl = resolveVncViewerUrl(
+    props.gatewayUrl,
+    props.token,
+    props.selectedNodeId,
+    props.vncPassword,
+  );
 
   const nodeSelector =
     props.nodes.length > 0
