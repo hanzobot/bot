@@ -308,7 +308,9 @@ export function resolveEnvApiKey(provider: string): EnvApiKeyResult | null {
   }
 
   if (normalized === "digitalocean") {
-    return pick("DIGITALOCEAN_ACCESS_TOKEN") ?? pick("GRADIENT_MODEL_ACCESS_KEY");
+    return (
+      pick("DIGITALOCEAN_ACCESS_TOKEN") ?? pick("DO_API_TOKEN") ?? pick("GRADIENT_MODEL_ACCESS_KEY")
+    );
   }
 
   const envMap: Record<string, string> = {
