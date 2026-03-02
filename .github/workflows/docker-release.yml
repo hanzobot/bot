@@ -156,24 +156,28 @@ jobs:
         env:
           DOCKER_METADATA_OUTPUT_JSON: ${{ steps.meta.outputs.json }}
 
-  # Deploy to K8s via kubectl.
-  # Uses doctl + DigitalOcean API token to get kubeconfig, then
-  # restarts the bot-gateway deployment in the hanzo namespace.
+  # Deploy via Hanzo PaaS (platform.hanzo.ai).
+  # Triggers a webhook that tells the platform to pull the new image
+  # and rolling-restart the bot-gateway service.
   deploy:
     runs-on: ubuntu-latest
     needs: [create-manifest]
     if: github.ref == 'refs/heads/main'
+    environment: production
     steps:
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DO_API_TOKEN }}
-
-      - name: Configure kubectl
-        run: doctl kubernetes cluster kubeconfig save 1a153000-90a6-48ad-9375-7ef901a9bf7f
-
-      - name: Deploy
+      - name: Deploy via Hanzo Platform
         run: |
-          kubectl rollout restart deployment/bot-gateway -n hanzo
-          kubectl rollout status deployment/bot-gateway -n hanzo --timeout=300s
-          echo "Deploy complete"
+          curl -sf -X POST \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: Go-http-client/1.1" \
+            -d '{
+              "push_data": {
+                "tag": "latest",
+                "pusher": "${{ github.actor }}"
+              },
+              "repository": {
+                "repo_name": "hanzobot/bot"
+              }
+            }' \
+            "https://platform.hanzo.ai/api/deploy/${{ secrets.PLATFORM_DEPLOY_TOKEN }}"
+          echo "Deploy triggered via Hanzo Platform"
